@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-
+// Joint table for per recipe ingredient requirement 
 const recipeIngredientSchema = new Schema({
   ingredientId: {
     type: Schema.Types.ObjectId,
@@ -22,23 +22,25 @@ const recipeIngredientSchema = new Schema({
   }
 }, { _id: false }); 
 
+// Recipe model
 const recipeSchema = new Schema({
   recipeName: {
     type: String,
     required: true,
     trim: true
   },
-  description: {
+  notes: {
     type: String,
     trim: true
   },
-  instructions: {
-    type: String,
-    required: true
-  },
-  servings: {
-    type: Number
-  },
+// can be stuff for later not rly wanna trouble myself rn
+//   instructions: {
+//     type: String,
+//     required: true
+//   },
+//   servings: {
+//     type: Number
+//   },
   ingredients: [recipeIngredientSchema]
 }, {
   timestamps: true
