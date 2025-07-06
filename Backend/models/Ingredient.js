@@ -4,32 +4,28 @@ const Schema = mongoose.Schema;
 const ingredientSchema = new Schema({
     name: {
         type: String,
-        required: [true, 'Ingredient name is required'],
+        required: true,
+        unique: true,
         trim: true,
-        unique : true
-    },
+  },
+
     description: {
         type: String,
-        trim: true
-    },
-    
-    // -- Cached fields --
+        trim: true,
+  },
 
-    latestPricePerUnit: {
+  // Price is per gram
+    latestPricePerGram: {
         type: Number,
-        default: 0
-    },
-    standardUnit: {
-        type: String,
-        required: [true, 'A standard unit (e.g., gram, ml, item) is required.']
-    },
+        default: 0,
+  },
+
     lastUpdated: {
-        type: Date
-    }
-    }, {
-
-    timestamps: true
-    });
+        type: Date,
+  },
+}, { timestamps: true });
 
 
-    module.exports = mongoose.model('Ingredient', ingredientSchema);
+module.exports = mongoose.model('Ingredient', ingredientSchema);
+
+

@@ -1,6 +1,7 @@
 const Recipe = require('../models/recipeModel');
 const Ingredient = require('../models/ingredientModel');
 const mongoose = require('mongoose');
+const { convertToGrams } = require('../models/conversionSetting')
 
 // custom error handler
 class AppError extends Error {
@@ -84,31 +85,55 @@ const deleteRecipe = async (recipeId) => {
     }
 }
 
-// Function to calculate the total cost of a recipe
 const calculateRecipeCost = async (recipeId) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(recipeId)) {
-            throw new AppError('Invalid recipe ID format.', 400);
+    const recipe = await Recipe.findById(recipeId).lean(); // .lean() for performance
+    if (!recipe) throw new AppError('Recipe not found.', 404);
+
+    const ingredientIds = recipe.ingredients.map(ing => ing.ingredientId);
+    const ingredientsData = await Ingredient.find({ '_id': { $in: ingredientIds } }).lean();
+    const ingredientMap = new Map(ingredientsData.map(ing => [ing._id.toString(), ing]));
+
+    let totalCost = 0;
+    const ingredientCosts = [];
+
+    await Promise.all(recipe.ingredients.map(async (recipeIngredient) => {
+        const masterIngredient = ingredientMap.get(recipeIngredient.ingredientId.toString());
+        if (!masterIngredient) throw new AppError(`Data for ingredient '${recipeIngredient.ingredientName}' not found.`, 404);
+
+        try {
+        // Use the service to convert the recipe amount to grams
+        const amountInGrams = await convertToGrams(
+            recipeIngredient.amount,
+            recipeIngredient.unit
+        );
+
+        const cost = amountInGrams * masterIngredient.latestPricePerGram;
+        
+        // We lock here to prevent race conditions when updating shared variables
+        totalCost += cost;
+        ingredientCosts.push({
+            name: recipeIngredient.ingredientName,
+            cost,
+        });
+
+        } catch (error) {
+        throw new AppError(`Could not calculate cost for ${masterIngredient.name}: ${error.message}`, 400);
         }
+    }));
 
-        const pipeline = [
-            { $match: { _id: new mongoose.Types.ObjectId.isValid(recipeId)}},
+    return {
+        _id: recipe._id,
+        recipeName: recipe.recipeName,
+        totalCost,
+        ingredientCosts,
+    };
+};
 
-            {$unwind: '$ingredients'},
-
-            {
-                $lookup: {
-                    from: 'ingredients',
-                    localField: 'ingredients.ingredientId',
-                    foreignField: '_id',
-                    as: 'ingredientDetails'
-                }
-            },
-
-            { $unwind: '$ingredientDetails' },
-            
-        ]
-    } catch (error) {
-        throw new AppError('Error calculating recipe cost', 500);
-    }
-}
+module.exports = {
+    findAllRecipes,
+    findRecipeById,
+    createRecipe,
+    updateRecipe,
+    deleteRecipe,
+    calculateRecipeCost
+};
