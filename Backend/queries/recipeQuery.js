@@ -1,5 +1,5 @@
-const Recipe = require('../models/recipeModel');
-const Ingredient = require('../models/ingredientModel');
+const Recipe = require('../models/Recipe');
+const Ingredient = require('../models/Ingredient');
 const mongoose = require('mongoose');
 const { convertToGrams } = require('../models/conversionSetting')
 

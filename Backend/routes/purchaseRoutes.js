@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const purchaseController = require('../controller/purchaseController.js')
+const purchaseController = require('../controller/purchaseController')
 
 // get all purchases
 router.get('/', purchaseController.getAllPurchases);

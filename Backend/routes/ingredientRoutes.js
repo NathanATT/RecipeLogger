@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ingredientController = require('../controllers/ingredientController');
+const ingredientController = require('../controller/ingredientController');
 
 
 // Get all ingredients

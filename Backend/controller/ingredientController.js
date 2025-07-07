@@ -1,4 +1,4 @@
-const ingredientQuery = require('../queries/ingredientQueries');
+const ingredientQuery = require('../queries/ingredientQuery');
 
 module.exports = {
     getAllIngredients: async (req, res) => {

@@ -1,5 +1,5 @@
-const Purchase = require('./models/Purchase');
-const Ingredient = require('./models/Ingredient');
+const Purchase = require('../models/Purchase');
+const Ingredient = require('../models/Ingredient');
 
 // Error handling for the purchase query
 class AppError extends Error {
