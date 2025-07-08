@@ -1,7 +1,7 @@
 const Recipe = require('../models/Recipe');
 const Ingredient = require('../models/Ingredient');
 const mongoose = require('mongoose');
-const { convertToGrams } = require('../models/conversionSetting')
+const { convertToGrams } = require('../queries/unitConversionService')
 
 // custom error handler
 class AppError extends Error {

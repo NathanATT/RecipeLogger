@@ -13,9 +13,8 @@ const purchaseSchema = new Schema({
         min: [0, 'Quantity cannot be negative']
     },
     purchaseUnit: {
-        type: Number,
-        required: [true, 'Unit price is required'],
-        min: [0, 'Unit price cannot be negative']
+        type: String,
+        required: [true, 'Unit is required']
     },
     price: {
         type: Number,

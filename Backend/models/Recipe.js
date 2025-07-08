@@ -38,9 +38,9 @@ const recipeSchema = new Schema({
 //     type: String,
 //     required: true
 //   },
-//   servings: {
-//     type: Number
-//   },
+  servings: {
+    type: Number
+  },
   ingredients: [recipeIngredientSchema]
 }, {
   timestamps: true
