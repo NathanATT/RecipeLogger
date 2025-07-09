@@ -164,7 +164,7 @@ const RecipesPage: React.FC = () => {
             <h3>{recipe.recipeName}</h3>
             <p>{recipe.description || 'No description provided.'}</p>
             <div className="card-actions">
-              <Link to={`/recipe/${recipe._id}`} className="action-link-button">View & Cost</Link>
+              <Link to={`/recipe/${recipe._id}`} className="action-link-button">View detailed cost</Link>
               <button className="icon-button" title="Edit" onClick={() => handleOpenModal('edit', recipe)}><FaEdit/></button>
               <button className="icon-button" title="Cost" onClick={() => handleCalculateCost(recipe._id)}><FaDollarSign/></button>
               <button className="icon-button delete" title="Delete" onClick={() => handleDeleteRecipe(recipe._id)}><FaTrash/></button>
