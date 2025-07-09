@@ -72,4 +72,12 @@ module.exports = {
             res.status(500).json({ message: error.message });
         }
     },
+    createRecipeFromText: async (req, res) => {
+        try {
+            const newRecipe = await recipeQuery.createRecipeFromText(req.body);
+            res.status(201).json(newRecipe);
+        } catch (error) {
+            res.status(error.statusCode || 400).json({ message: error.message });
+        }
+    }
 }

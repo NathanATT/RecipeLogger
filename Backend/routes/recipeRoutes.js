@@ -20,4 +20,7 @@ router.put('/:id', recipeController.updateRecipe);
 // Delete a recipe
 router.delete('/:id', recipeController.deleteRecipe);
 
+// Create a recipe from an ingredient list
+router.post('/from-text', recipeController.createRecipeFromText)
+
 module.exports = router;

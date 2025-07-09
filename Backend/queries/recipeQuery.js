@@ -131,7 +131,12 @@ const calculateRecipeCost = async (recipeId) => {
     };
 };
 
-// Function to auto import full ingredients list 
+/**
+ * Creates a recipe from a payload where ingredients are specified by name.
+ * It finds or creates ingredients as needed.
+ * @param {object} recipeData - Recipe data with a text-based ingredient list.
+ * @returns {Promise<Object>} The newly created recipe document.
+ */
 const createRecipeFromText = async (recipeData) => {
   const { recipeName, ingredients: textIngredients, ...rest } = recipeData;
 
