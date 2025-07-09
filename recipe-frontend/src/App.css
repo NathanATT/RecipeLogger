@@ -1,42 +1,128 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* --- Global Styles & Variables --- */
+:root {
+  --primary-bg: #1a1a2e;
+  --secondary-bg: #16213e;
+  --sidebar-bg: #0f3460;
+  --accent-color: #e94560;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --border-color: #2c3e50;
+  --sidebar-width: 240px;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+/* --- Main App Layout --- */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --- Sidebar Styles --- */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  position: fixed; 
+  height: 100%;
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 1.5rem 1rem;
   text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.sidebar-header h3 {
+  margin: 0;
+  color: var(--accent-color);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.sidebar-nav-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 1rem 0;
+  flex-grow: 1;
+}
+
+.sidebar-nav-list li a {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-left: 4px solid transparent; 
+}
+
+.sidebar-nav-list li a:hover {
+  background-color: var(--secondary-bg);
+  color: var(--text-primary);
+}
+
+/* Style for the active NavLink */
+.sidebar-nav-list li a.active {
+  background-color: var(--secondary-bg);
+  color: var(--text-primary);
+  font-weight: bold;
+  border-left: 4px solid var(--accent-color);
+}
+
+.nav-icon {
+  margin-right: 1rem;
+  font-size: 1.5rem;
+  min-width: 24px; /* Ensures alignment */
+}
+
+
+/* --- Main Content Styles --- */
+.main-content {
+  flex-grow: 1; 
+  margin-left: var(--sidebar-width);
+  padding: 2rem;
+  transition: margin-left 0.3s ease; 
+}
+
+
+/* --- Allow for screen size changes--- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 60px; 
   }
-  to {
-    transform: rotate(360deg);
+
+  .sidebar-header h3,
+  .sidebar-nav-list span {
+    display: none; 
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .sidebar-header {
+    padding: 1.2rem 0;
+    border-bottom: none;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .sidebar-nav-list li a {
+    justify-content: center; /* Center the icon */
+    padding: 1rem 0;
+  }
+  
+  .nav-icon {
+    margin-right: 0; /* Remove margin when text is hidden */
+  }
 }

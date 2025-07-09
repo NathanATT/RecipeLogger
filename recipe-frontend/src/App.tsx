@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { GiCook, GiThreeLeaves, GiSettingsKnobs } from 'react-icons/gi'; // Example icons
 
-function App() {
-  const [count, setCount] = useState(0)
+import RecipesPage from './pages/RecipePage';
+import IngredientsPage from './pages/IngredientsPage';
+import SettingsPage from './pages/SettingsPage';
+import RecipeDetailPage from './pages/RecipeDetailsPage';
+import './App.css';
+import './styles/forms.css'
 
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="app-container">
+        {/* Sidebar Navigation */}
+        <nav className="sidebar">
+          <div className="sidebar-header">
+            <h3>Recipe Logger</h3>
+          </div>
+          <ul className="sidebar-nav-list">
+            <li>
+              <NavLink to="/" end>
+                <GiCook className="nav-icon" />
+                <span>Recipes</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/ingredients">
+                <GiThreeLeaves className="nav-icon" />
+                <span>Ingredients</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/settings">
+                <GiSettingsKnobs className="nav-icon" />
+                <span>Settings</span>
+              </NavLink>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Main Content Area */}
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<RecipesPage />} />
+            <Route path="/ingredients" element={<IngredientsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/recipe/:id" element={<RecipeDetailPage />} />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
