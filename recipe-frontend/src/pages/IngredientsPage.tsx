@@ -113,7 +113,7 @@ const IngredientsPage: React.FC = () => {
   };
 
   // --- Render Logic ---
-  if (isLoading) return <div className="loading-spinner">Loading Ingredients...</div>;
+  if (isLoading) return <div className="loading-spinner">Counting eggs...</div>;
   
   return (
     <div className="page-container ingredients-page-container">
