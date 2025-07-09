@@ -91,10 +91,31 @@ const deleteIngredient = async (ingredientId) => {
     }
 }
 
+// Function to find or create an ingredient 
+const findOrCreateIngredient = async (name) => {
+    const ingredientName = name.trim();
+    if (!ingredientName) {
+        throw new AppError('Ingredient name cannot be empty', 400)
+    }
+
+    const existingIngredient = await Ingredient.findOne({
+        name: { $regex: new RegExp(`^${ingredientName}$`, 'i') }
+    })
+
+    if (existingIngredient){
+        return existingIngredient
+    }
+
+    const newIngredient = new Ingredient({name: ingredientName});
+    await newIngredient.save();
+    return newIngredient;
+}
+
 module.exports = {
     findAllIngredients,
     findIngredientById,
     createIngredient,
     updateIngredient,
-    deleteIngredient
+    deleteIngredient,
+    findOrCreateIngredient
 };

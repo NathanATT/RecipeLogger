@@ -95,7 +95,7 @@
 }
 
 .icon-button.delete:hover {
-  border-color: #e74c3c; 
+  border-color: #e74c3c; /* A red color for danger */
   color: #e74c3c;
   background-color: rgba(231, 76, 60, 0.1);
 }
