@@ -1,8 +1,19 @@
-/* --- Base Input, Select, and Textarea Styles --- */
+/* --- For proper input box scaling --- */
+.form-input,
+.form-select,
+.form-textarea,
+.recipe-form,
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  box-sizing: border-box;
+}
+
+/* --- Base Input and Select Styles --- */
 .form-input,
 .form-select,
 .form-textarea {
-  width: 100%;
+  width: 100%; 
   padding: 0.85rem 1rem;
   background-color: var(--secondary-bg);
   border: 1px solid var(--border-color);

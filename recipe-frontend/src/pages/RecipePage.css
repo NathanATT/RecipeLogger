@@ -114,6 +114,12 @@
   border: 1px solid var(--border-color);
   max-height: 90vh;
   overflow-y: auto;
+  box-sizing: border-box; 
+}
+
+.modal-content form {
+  width: 100%; /* Makes sure the form doesn't overflow */
+  margin-top: 1.5rem;
 }
 
 .modal-close-button {
