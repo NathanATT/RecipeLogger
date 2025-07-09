@@ -1,0 +1,96 @@
+/* --- Table Container: The outer shell --- */
+.table-container {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px; /* A more modern, rounded look */
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add some depth */
+}
+
+/* --- The Table Itself --- */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+}
+
+/* --- Table Header (thead) --- */
+.styled-table thead tr {
+  /* A slightly darker background for the header to make it stand out */
+  background-color: #111a2c; 
+  text-align: left;
+}
+
+.styled-table th {
+  padding: 1rem 1.5rem; /* Increased padding for more breathing room */
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary); /* A less prominent color for headers */
+}
+
+/* --- Table Body (tbody) --- */
+.styled-table tbody tr {
+  /* Use a transparent border to create space between rows */
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.styled-table td {
+  padding: 1rem 1.5rem; /* Match header padding */
+  vertical-align: middle; /* Ensure content is centered vertically */
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: none; /* No border on the very last row */
+}
+
+.styled-table tbody tr:hover {
+  background-color: rgba(233, 69, 96, 0.05); /* A very subtle accent hover */
+}
+
+/* --- Specific Column Styling for Clarity --- */
+
+/* The main ingredient name should be prominent */
+.styled-table td:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* The price can be slightly less prominent */
+.styled-table td:nth-child(2) {
+  font-family: 'Courier New', Courier, monospace; /* Monospaced font for numbers */
+  color: #2ecc71; /* Green for money */
+}
+
+/* The date can be even less prominent */
+.styled-table td:nth-child(3) {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* --- Action Cell and Buttons --- */
+.action-cell {
+  text-align: right; /* Align actions to the right */
+  width: 120px; /* Give a fixed width to prevent layout shifts */
+}
+
+.icon-button {
+  background: none;
+  border: 1px solid transparent; /* Prepare for a border on hover */
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin: 0 0.25rem;
+  border-radius: 8px; /* Rounded buttons */
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background-color: rgba(233, 69, 96, 0.1);
+}
+
