@@ -1,237 +1,233 @@
 import React, { useState, useEffect,} from 'react';
-import type {FormEvent } from 'react'
-import * as api from '../api/apiService'; 
+import type { FormEvent } from 'react'
+import * as api from '../api/apiService';
 import type { Recipe, Ingredient, RecipeCost } from '../types';
-import './RecipePage.css'; 
-import { FaPlus, FaDollarSign, FaTimes,} from 'react-icons/fa'; 
-import {Link} from 'react-router-dom'
+import './RecipePage.css';
+import { FaPlus, FaDollarSign, FaTimes, FaEdit, FaTrash, FaSave } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+
+// Define a type for our form state
+type RecipeFormState = Omit<Recipe, '_id' | 'createdAt' | 'updatedAt'> & { id?: string };
+
+// Define a type for the expected structure of an Axios error response
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
 
 const RecipesPage: React.FC = () => {
+  // --- State ---
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for modals
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [isCostModalOpen, setIsCostModalOpen] = useState<boolean>(false);
-  const [selectedRecipeCost, setSelectedRecipeCost] = useState<RecipeCost | null>(null);
+  const [modal, setModal] = useState<{
+    mode: 'create' | 'edit' | 'cost' | null;
+    data: Recipe | RecipeCost | null;
+  }>({ mode: null, data: null });
 
-  // State for the "Create Recipe" form
-  const [newRecipe, setNewRecipe] = useState({
+  const initialFormState: RecipeFormState = {
     recipeName: '',
     description: '',
     instructions: '',
-    ingredients: [{ ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }]
-  });
+    servings: 1,
+    ingredients: [{ ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }],
+  };
+  const [recipeForm, setRecipeForm] = useState<RecipeFormState>(initialFormState);
 
-  // Fetch initial data on component mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const [recipesRes, ingredientsRes] = await Promise.all([
-          api.getRecipes(),
-          api.getIngredients()
-        ]);
-        setRecipes(recipesRes.data);
-        setIngredients(ingredientsRes.data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load data. Please try again later.');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  // -------- Data Fetching --------
+  useEffect(() => { loadData(); }, []);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [recipesRes, ingredientsRes] = await Promise.all([
+        api.getRecipes(),
+        api.getIngredients()
+      ]);
+      setRecipes(recipesRes.data);
+      setIngredients(ingredientsRes.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load data. Please try again later.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // -------- Modal & Form Handlers --------
+  const handleOpenModal = (mode: 'create' | 'edit' | 'cost', data: Recipe | RecipeCost | null = null) => {
+    setError(null);
+    if (mode === 'edit' && data) {
+      setRecipeForm({ ...(data as Recipe), id: (data as Recipe)._id });
+    }
+    setModal({ mode, data });
+  };
   
-  // --- Form Handlers for Create Recipe Modal ---
-
-  const handleRecipeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleCloseModal = () => {
+    setModal({ mode: null, data: null });
+    setRecipeForm(initialFormState);
+  };
+  
+  // -------- Form Input Handlers (re-usable for create/edit) --------
+  const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewRecipe(prev => ({ ...prev, [name]: value }));
+    const val = name === 'servings' ? (parseInt(value, 10) || 1) : value;
+    setRecipeForm(prev => ({ ...prev, [name]: val }));
   };
 
   const handleIngredientChange = (index: number, field: string, value: string) => {
-    const updatedIngredients = [...newRecipe.ingredients];
+    const updatedIngredients = [...recipeForm.ingredients];
+    const currentIngredient = { ...updatedIngredients[index] };
+    
     if (field === 'ingredientId') {
         const selectedIng = ingredients.find(ing => ing._id === value);
-        updatedIngredients[index] = {
-            ...updatedIngredients[index],
-            ingredientId: value,
-            ingredientName: selectedIng ? selectedIng.name : ''
-        };
+        currentIngredient.ingredientId = value;
+        currentIngredient.ingredientName = selectedIng ? selectedIng.name : '';
     } else if (field === 'amount') {
-        updatedIngredients[index] = { ...updatedIngredients[index], amount: parseFloat(value) || 0 };
+        currentIngredient.amount = parseFloat(value) || 0;
     } else {
-        updatedIngredients[index] = { ...updatedIngredients[index], [field]: value };
+        currentIngredient.unit = value;
     }
-    setNewRecipe(prev => ({ ...prev, ingredients: updatedIngredients }));
+    updatedIngredients[index] = currentIngredient;
+    setRecipeForm(prev => ({ ...prev, ingredients: updatedIngredients }));
   };
 
   const addIngredientField = () => {
-    setNewRecipe(prev => ({
-      ...prev,
-      ingredients: [...prev.ingredients, { ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }]
-    }));
+    setRecipeForm(prev => ({ ...prev, ingredients: [...prev.ingredients, { ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }] }));
   };
-
   const removeIngredientField = (index: number) => {
-    const updatedIngredients = newRecipe.ingredients.filter((_, i) => i !== index);
-    setNewRecipe(prev => ({ ...prev, ingredients: updatedIngredients }));
+    setRecipeForm(prev => ({ ...prev, ingredients: prev.ingredients.filter((_, i) => i !== index) }));
   };
 
-  const handleCreateRecipeSubmit = async (e: FormEvent) => {
+  // -------- CRUD Handlers --------
+  const handleRecipeSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
-        await api.createRecipe(newRecipe);
-        setIsCreateModalOpen(false);
-        // Reset form and refetch recipes
-        setNewRecipe({ recipeName: '', description: '', instructions: '', ingredients: [{ ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }] });
-        const response = await api.getRecipes();
-        setRecipes(response.data);
+      const { id, ...recipeData } = recipeForm;
+      if (modal.mode === 'edit' && id) {
+        await api.updateRecipe(id, recipeData);
+      } else {
+        await api.createRecipe(recipeData);
+      }
+      handleCloseModal();
+      loadData();
     } catch (err) {
-        console.error("Error creating recipe:", err);
-        setError('Failed to create recipe.');
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to save recipe.');
     }
   };
-
-  // --- Cost Calculation Handler ---
+  
+  const handleDeleteRecipe = async (recipeId: string) => {
+    if (window.confirm("Are you sure you want to delete this recipe?")) {
+      try {
+        await api.deleteRecipe(recipeId);
+        loadData();
+      } catch (err) {
+        const apiError = err as ApiError;
+        alert(apiError.response?.data?.message || "Failed to delete recipe.");
+      }
+    }
+  };
 
   const handleCalculateCost = async (recipeId: string) => {
+    setError(null);
     try {
-        const response = await api.getRecipeCost(recipeId);
-        setSelectedRecipeCost(response.data);
-        setIsCostModalOpen(true);
+      const response = await api.getRecipeCost(recipeId);
+      handleOpenModal('cost', response.data);
     } catch (err) {
-        console.error("Error calculating cost:", err);
-        setError('Failed to calculate recipe cost.');
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'Failed to calculate recipe cost.');
     }
   };
-
+  
+  // -------- Render Logic --------
   if (isLoading) return <div className="loading-spinner">Loading...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (error && !modal.mode) return <div className="error-message page-error">{error}</div>;
 
   return (
     <div className="page-container">
       <header className="page-header">
         <h1>My Recipes</h1>
-        <button className="action-button" onClick={() => setIsCreateModalOpen(true)}>
+        <button className="action-button" onClick={() => handleOpenModal('create')}>
           <FaPlus /> Create Recipe
         </button>
       </header>
-
       <div className="recipe-grid">
         {recipes.map(recipe => (
-        <div key={recipe._id} className="recipe-card">
+          <div key={recipe._id} className="recipe-card">
             <h3>{recipe.recipeName}</h3>
             <p>{recipe.description || 'No description provided.'}</p>
             <div className="card-actions">
-                <Link to={`/recipe/${recipe._id}`} className="view-button">View detailed cost</Link>
-                <button onClick={() => handleCalculateCost(recipe._id)}>
-                    <FaDollarSign /> Quick Cost
-                </button>
+              <Link to={`/recipe/${recipe._id}`} className="action-link-button">View & Cost</Link>
+              <button className="icon-button" title="Edit" onClick={() => handleOpenModal('edit', recipe)}><FaEdit/></button>
+              <button className="icon-button" title="Cost" onClick={() => handleCalculateCost(recipe._id)}><FaDollarSign/></button>
+              <button className="icon-button delete" title="Delete" onClick={() => handleDeleteRecipe(recipe._id)}><FaTrash/></button>
             </div>
-        </div>
+          </div>
         ))}
       </div>
 
-      {/* --- Create Recipe Modal --- */}
-      {isCreateModalOpen && (
+      {/* -------- Create/Edit Recipe Modal -------- */}
+      {(modal.mode === 'create' || modal.mode === 'edit') && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <button className="modal-close-button" onClick={() => setIsCreateModalOpen(false)}><FaTimes /></button>
-            <h2>Create New Recipe</h2>
-            <form onSubmit={handleCreateRecipeSubmit} className="recipe-form">
+            <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
+            <h2>{modal.mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}</h2>
+            <form onSubmit={handleRecipeSubmit} className="recipe-form">
+              {error && <div className="error-message form-feedback">{error}</div>}
               <div className="form-group">
-                <label htmlFor="recipeName">Recipe Name</label>
-                <input 
-                  id="recipeName"
-                  name="recipeName" 
-                  className="form-input" 
-                  value={newRecipe.recipeName} 
-                  onChange={handleRecipeInputChange} 
-                  placeholder="e.g., Chocolate Chip Cookies" 
-                  required 
-                />
+                <label>Recipe Name</label>
+                <input name="recipeName" value={recipeForm.recipeName} onChange={handleFormInputChange} required className="form-input"/>
               </div>
-
               <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea 
-                  id="description"
-                  name="description" 
-                  className="form-textarea" 
-                  value={newRecipe.description} 
-                  onChange={handleRecipeInputChange} 
-                  placeholder="A short and sweet description" 
-                />
+                <label>Servings</label>
+                <input name="servings" type="number" min="1" value={recipeForm.servings} onChange={handleFormInputChange} required className="form-input"/>
               </div>
-
               <div className="form-group">
-                <label htmlFor="instructions">Instructions</label>
-                <textarea 
-                  id="instructions"
-                  name="instructions" 
-                  className="form-textarea" 
-                  value={newRecipe.instructions} 
-                  onChange={handleRecipeInputChange} 
-                  placeholder="Step 1: Mix flour and sugar..." 
-                  required 
-                />
+                <label>Description</label>
+                <textarea name="description" value={recipeForm.description} onChange={handleFormInputChange} className="form-textarea"/>
+              </div>
+              <div className="form-group">
+                <label>Instructions</label>
+                <textarea name="instructions" value={recipeForm.instructions} onChange={handleFormInputChange} required className="form-textarea"/>
               </div>
               
               <h4>Ingredients</h4>
-              {newRecipe.ingredients.map((ing, index) => (
+              {recipeForm.ingredients.map((ing, index) => (
                 <div key={index} className="ingredient-form-row">
-                  <select 
-                    value={ing.ingredientId} 
-                    className="form-select" 
-                    onChange={e => handleIngredientChange(index, 'ingredientId', e.target.value)} 
-                    required
-                  >
+                  <select value={ing.ingredientId} className="form-select" onChange={e => handleIngredientChange(index, 'ingredientId', e.target.value)} required>
                     <option value="" disabled>Select Ingredient</option>
                     {ingredients.map(masterIng => (
                       <option key={masterIng._id} value={masterIng._id}>{masterIng.name}</option>
                     ))}
                   </select>
-                  <input 
-                    type="number" 
-                    className="form-input"
-                    value={ing.amount} 
-                    onChange={e => handleIngredientChange(index, 'amount', e.target.value)} 
-                    placeholder="Amount" 
-                    required 
-                  />
-                  <input 
-                    value={ing.unit} 
-                    className="form-input" 
-                    onChange={e => handleIngredientChange(index, 'unit', e.target.value)} 
-                    placeholder="Unit (e.g., g, cup)" 
-                    required 
-                  />
-                  <button type="button" onClick={() => removeIngredientField(index)}><FaTimes /></button>
+                  <input type="number" value={ing.amount} className="form-input" onChange={e => handleIngredientChange(index, 'amount', e.target.value)} placeholder="Amount" required />
+                  <input value={ing.unit} className="form-input" onChange={e => handleIngredientChange(index, 'unit', e.target.value)} placeholder="Unit (g, cup)" required />
+                  <button type="button" className="delete-rule-btn" onClick={() => removeIngredientField(index)}><FaTimes /></button>
                 </div>
               ))}
               <button type="button" className="add-ingredient-button" onClick={addIngredientField}>+ Add Ingredient</button>
-
-              <button type="submit" className="submit-button">Save Recipe</button>
+              <button type="submit" className="submit-button"><FaSave /> Save Recipe</button>
             </form>
           </div>
         </div>
       )}
       
-      {/* --- Recipe Cost Modal --- */}
-      {isCostModalOpen && selectedRecipeCost && (
+      {/* -------- Recipe Cost Modal -------- */}
+      {modal.mode === 'cost' && modal.data && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <button className="modal-close-button" onClick={() => setIsCostModalOpen(false)}><FaTimes /></button>
-            <h2>Cost for {selectedRecipeCost.recipeName}</h2>
-            <h3 className="total-cost">Total Cost: ${selectedRecipeCost.totalCost.toFixed(2)}</h3>
+            <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
+            <h2>Cost for {(modal.data as RecipeCost).recipeName}</h2>
+            <h3 className="total-cost">Total Cost: ${(modal.data as RecipeCost).totalCost.toFixed(2)}</h3>
             <ul className="cost-breakdown">
-                {selectedRecipeCost.ingredientCosts.map((item, index) => (
+                {(modal.data as RecipeCost).ingredientCosts.map((item, index) => (
                     <li key={index}>
                         <span>{item.name}</span>
                         <span>${item.cost.toFixed(2)}</span>
