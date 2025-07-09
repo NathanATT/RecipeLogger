@@ -2,6 +2,7 @@ const Recipe = require('../models/Recipe');
 const Ingredient = require('../models/Ingredient');
 const mongoose = require('mongoose');
 const { convertToGrams } = require('../queries/unitConversionService')
+const { findOrCreateIngredient } = require('./ingredientQuery')
 
 // custom error handler
 class AppError extends Error {
@@ -85,6 +86,7 @@ const deleteRecipe = async (recipeId) => {
     }
 }
 
+// Function to calculate recipe cost 
 const calculateRecipeCost = async (recipeId) => {
     const recipe = await Recipe.findById(recipeId).lean(); // .lean() for performance
     if (!recipe) throw new AppError('Recipe not found.', 404);
@@ -129,11 +131,43 @@ const calculateRecipeCost = async (recipeId) => {
     };
 };
 
+// Function to auto import full ingredients list 
+const createRecipeFromText = async (recipeData) => {
+  const { recipeName, ingredients: textIngredients, ...rest } = recipeData;
+
+  if (!recipeName || !textIngredients || !Array.isArray(textIngredients)) {
+    throw new AppError('Recipe name and an ingredients array are required.', 400);
+  }
+
+  // Process each text ingredient to get a valid ingredient sub-document
+  const processedIngredients = await Promise.all(
+    textIngredients.map(async (ing) => {
+      const ingredientDoc = await findOrCreateIngredient(ing.name);
+      return {
+        ingredientId: ingredientDoc._id,
+        ingredientName: ingredientDoc.name, 
+        amount: ing.amount,
+        unit: ing.unit,
+      };
+    })
+  );
+
+  const newRecipe = new Recipe({
+    recipeName,
+    ingredients: processedIngredients,
+    ...rest,
+  });
+
+  await newRecipe.save();
+  return newRecipe;
+};
+
 module.exports = {
     findAllRecipes,
     findRecipeById,
     createRecipe,
     updateRecipe,
     deleteRecipe,
-    calculateRecipeCost
+    calculateRecipeCost,
+    createRecipeFromText
 };
