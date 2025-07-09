@@ -1,0 +1,220 @@
+/* --- Page Layout & Header --- */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: #d6344d;
+}
+
+/* --- Recipe Grid & Cards --- */
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.recipe-card {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.recipe-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.recipe-card p {
+  color: var(--text-secondary);
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.card-actions button {
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-actions button:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+
+/* --- Modal Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--primary-bg);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  border: 1px solid var(--border-color);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
+/* --- Form Styles --- */
+.recipe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recipe-form input,
+.recipe-form textarea,
+.recipe-form select {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.recipe-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.ingredient-form-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.ingredient-form-row select { flex: 3; }
+.ingredient-form-row input[type="number"] { flex: 1; }
+.ingredient-form-row input { flex: 1; }
+.ingredient-form-row button {
+  padding: 0.5rem;
+  background-color: #444;
+  border: none;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.add-ingredient-button {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background-color: var(--sidebar-bg);
+  border: none;
+  border-radius: 5px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.submit-button {
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+/* --- Cost Breakdown Styles --- */
+.total-cost {
+    text-align: center;
+    font-size: 2rem;
+    margin: 1rem 0 2rem 0;
+}
+
+.cost-breakdown {
+    list-style-type: none;
+    padding: 0;
+}
+
+.cost-breakdown li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+}
+
+.cost-breakdown li:last-child {
+    border-bottom: none;
+}
