@@ -5,6 +5,7 @@ import type { Recipe, Ingredient, RecipeCost } from '../types';
 import './RecipePage.css';
 import { FaPlus, FaDollarSign, FaTimes, FaEdit, FaTrash, FaSave } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { parseIngredientsFromText } from '../utils/recipeParser';
 
 // Define a type for our form state
 type RecipeFormState = Omit<Recipe, '_id' | 'createdAt' | 'updatedAt'> & { id?: string };

@@ -58,3 +58,19 @@ export interface RecipeCost {
         pricePerUnit: string;
     }[];
 }
+
+// Type for parsed single ingredients
+export interface ParsedIngredientPayload {
+  name: string;
+  amount: number;
+  unit: string;
+}
+
+// Type for full recipe from text input
+export interface CreateRecipeFromTextPayload {
+  recipeName: string;
+  description?: string;
+  instructions?: string;
+  servings?: number;
+  ingredients: ParsedIngredientPayload[];
+}

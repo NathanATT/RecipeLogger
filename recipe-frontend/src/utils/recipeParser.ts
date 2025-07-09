@@ -12,6 +12,7 @@ export const parseIngredientsFromText = (text: string): ParsedIngredient[] => {
             return null
         }
 
+        // format for ingredient is name amount unit
         const unit = parts.pop()!;
         const amountStr = parts.pop()!;
         const amount = parseFloat(amountStr);
