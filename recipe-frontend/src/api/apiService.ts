@@ -24,8 +24,11 @@ export const createRecipe = (recipeData: Omit<Recipe, '_id'>) =>
   axios.post<Recipe>(`${API_URL}/recipes`, recipeData);
 export const getRecipeCost = (recipeId: string) => 
   axios.get<RecipeCost>(`${API_URL}/recipes/${recipeId}/cost`);
-// in src/api/apiService.ts
 export const getRecipeById = (id: string) => axios.get<Recipe>(`${API_URL}/recipes/${id}`);
+export const updateRecipe = (id: string, recipeData: Omit<Recipe, '_id'>) =>
+  axios.put<Recipe>(`${API_URL}/recipes/${id}`, recipeData);
+export const deleteRecipe = (id: string) =>
+  axios.delete(`${API_URL}/recipes/${id}`);
 
 // --- Purchase API Calls ---
 export const logPurchase = (purchaseData: Purchase) => 
