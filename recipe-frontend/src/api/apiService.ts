@@ -12,6 +12,11 @@ const API_URL = 'http://localhost:5000/api';
 export const getIngredients = () => axios.get<Ingredient[]>(`${API_URL}/ingredients`);
 export const createIngredient = (ingredientData: { name: string; description?: string }) => 
   axios.post<Ingredient>(`${API_URL}/ingredients`, ingredientData);
+export const updateIngredient = (id: string, ingredientData: { name: string; description?: string }) =>
+  axios.put<Ingredient>(`${API_URL}/ingredients/${id}`, ingredientData);
+export const deleteIngredient = (id: string) => 
+  axios.delete(`${API_URL}/ingredients/${id}`);
+
 
 // --- Recipe API Calls ---
 export const getRecipes = () => axios.get<Recipe[]>(`${API_URL}/recipes`);

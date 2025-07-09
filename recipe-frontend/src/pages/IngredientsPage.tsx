@@ -1,26 +1,28 @@
 import React, { useState, useEffect,  } from 'react';
-import type {FormEvent} from 'react';
+import type {FormEvent} from 'react'
 import * as api from '../api/apiService';
 import type { Ingredient } from '../types';
-import './IngredientsPage.css'; 
-import { FaPlus, FaTimes, FaWarehouse, FaDollarSign , FaSave} from 'react-icons/fa'; // Icons
+import './IngredientsPage.css';
+import { FaPlus, FaTimes, FaWarehouse, FaSave, FaEdit, FaTrash, FaDollarSign } from 'react-icons/fa';
 
 const IngredientsPage: React.FC = () => {
+  // --- State ---
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // State for forms/modals
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState<boolean>(false);
-  const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
-  // State for "Create Ingredient" form
-  const [newIngredientName, setNewIngredientName] = useState<string>('');
+  const [modalState, setModalState] = useState<{
+    mode: 'create' | 'edit' | 'purchase' | null;
+    selectedIngredient: Ingredient | null;
+  }>({ mode: null, selectedIngredient: null });
+
+  // State for the Create/Edit form
+  const [ingredientForm, setIngredientForm] = useState({ id: '', name: '', description: '' });
   
-  // State for "Log Purchase" form
+  // State for the Log Purchase form
   const [purchaseForm, setPurchaseForm] = useState({ price: '', quantity: '', unit: 'kg' });
 
+  // --- Data Fetching ---
   useEffect(() => {
     fetchIngredients();
   }, []);
@@ -39,59 +41,90 @@ const IngredientsPage: React.FC = () => {
     }
   };
 
-  const handleCreateIngredient = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!newIngredientName.trim()) return;
-    try {
-      await api.createIngredient({ name: newIngredientName });
-      setNewIngredientName('');
-      setIsCreateModalOpen(false);
-      fetchIngredients(); // Refresh the list
-    } catch (err) {
-      console.error("Error creating ingredient:", err);
+  // --- Modal & Form Handlers ---
+  const handleOpenModal = (mode: 'create' | 'edit' | 'purchase', ingredient: Ingredient | null = null) => {
+    setError(null); 
+    setModalState({ mode, selectedIngredient: ingredient });
+    
+    if (mode === 'edit' && ingredient) {
+      setIngredientForm({ id: ingredient._id, name: ingredient.name, description: ingredient.description || '' });
     }
   };
   
-  const handleOpenPurchaseModal = (ingredient: Ingredient) => {
-    setSelectedIngredient(ingredient);
-    setIsPurchaseModalOpen(true);
+  const handleCloseModals = () => {
+    setModalState({ mode: null, selectedIngredient: null });
+    setIngredientForm({ id: '', name: '', description: '' });
+    setPurchaseForm({ price: '', quantity: '', unit: 'kg' });
   };
   
-  const handleCloseModals = () => {
-    setIsCreateModalOpen(false);
-    setIsPurchaseModalOpen(false);
-    setSelectedIngredient(null);
-    setPurchaseForm({ price: '', quantity: '', unit: 'kg' });
+  // --- API handlers ---
+  const handleIngredientSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      if (modalState.mode === 'edit') {
+        await api.updateIngredient(ingredientForm.id, { name: ingredientForm.name, description: ingredientForm.description });
+      } else {
+        await api.createIngredient({ name: ingredientForm.name, description: ingredientForm.description });
+      }
+      handleCloseModals();
+      fetchIngredients(); 
+    } catch (err) {
+      setError("Failed to save ingredient.");
+      console.error("Error saving ingredient:", err);
+    }
+  };
+
+  const handleDeleteIngredient = async (ingredientId: string) => {
+    if (window.confirm("Are you sure you want to delete this ingredient? This action cannot be undone.")) {
+      try {
+        await api.deleteIngredient(ingredientId);
+        fetchIngredients();
+      } catch (err) {
+        alert("Failed to delete ingredient.");
+        console.error("Error deleting ingredient:", err);
+      }
+    }
   };
 
   const handleLogPurchase = async (e: FormEvent) => {
-      e.preventDefault();
-      if (!selectedIngredient || !purchaseForm.price || !purchaseForm.quantity) return;
-      try {
-          await api.logPurchase({
-              ingredientId: selectedIngredient._id,
-              price: parseFloat(purchaseForm.price),
-              quantityPurchased: parseFloat(purchaseForm.quantity),
-              purchaseUnit: purchaseForm.unit,
-          });
-          handleCloseModals();
-          fetchIngredients();
-      } catch (err) {
-          console.error("Error logging purchase:", err);
-      }
+    e.preventDefault();
+    setError(null);
+    
+    if (!modalState.selectedIngredient || !purchaseForm.price || !purchaseForm.quantity) {
+        setError("Please fill out all purchase fields.");
+        return;
+    }
+      
+    try {
+      await api.logPurchase({
+        ingredientId: modalState.selectedIngredient._id,
+        price: parseFloat(purchaseForm.price),
+        quantityPurchased: parseFloat(purchaseForm.quantity),
+        purchaseUnit: purchaseForm.unit,
+      });
+      handleCloseModals();
+      fetchIngredients();
+    } catch (err) {
+      setError("Failed to log purchase.");
+      console.error("Error logging purchase:", err);
+    }
   };
 
+  // --- Render Logic ---
   if (isLoading) return <div className="loading-spinner">Loading Ingredients...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-
+  
   return (
     <div className="page-container ingredients-page-container">
       <header className="page-header">
         <h1>My Ingredients</h1>
-        <button className="action-button" onClick={() => setIsCreateModalOpen(true)}>
+        <button className="action-button" onClick={() => handleOpenModal('create')}>
           <FaPlus /> Add Ingredient
         </button>
       </header>
+
+      {error && !modalState.mode && <div className="error-message page-error">{error}</div>}
 
       <div className="table-container">
         <table className="styled-table">
@@ -100,20 +133,25 @@ const IngredientsPage: React.FC = () => {
               <th>Ingredient Name</th>
               <th>Latest Price per Gram</th>
               <th>Last Updated</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {ingredients.map((ing) => (
               <tr key={ing._id}>
                 <td>{ing.name}</td>
-                <td>${ing.latestPricePerGram.toFixed(6)}</td>
+                <td>${ing.latestPricePerGram > 0 ? ing.latestPricePerGram.toFixed(6) : 'N/A'}</td>
                 <td>{ing.lastUpdated ? new Date(ing.lastUpdated).toLocaleDateString() : 'N/A'}</td>
                 <td className="action-cell">
-                  <button className="icon-button" onClick={() => handleOpenPurchaseModal(ing)} title="Log New Purchase">
+                  <button className="icon-button" onClick={() => handleOpenModal('purchase', ing)} title="Log New Purchase">
                     <FaWarehouse />
                   </button>
-
+                  <button className="icon-button" onClick={() => handleOpenModal('edit', ing)} title="Edit Ingredient">
+                    <FaEdit />
+                  </button>
+                  <button className="icon-button delete" onClick={() => handleDeleteIngredient(ing._id)} title="Delete Ingredient">
+                    <FaTrash />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -121,40 +159,36 @@ const IngredientsPage: React.FC = () => {
         </table>
       </div>
 
-      {/* --- Create Ingredient Modal --- */}
-      {isCreateModalOpen && (
+      {/* --- Create/Edit Ingredient Modal --- */}
+      {(modalState.mode === 'create' || modalState.mode === 'edit') && (
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="modal-close-button" onClick={handleCloseModals}><FaTimes /></button>
-            <h2>Add New Ingredient</h2>
-            <form onSubmit={handleCreateIngredient}>
+            <h2>{modalState.mode === 'edit' ? 'Edit Ingredient' : 'Add New Ingredient'}</h2>
+            <form onSubmit={handleIngredientSubmit}>
+              {error && <div className="error-message form-feedback">{error}</div>}
               <div className="form-group">
-                <label htmlFor="ingredientName">Ingredient Name</label>
-                <input
-                  id="ingredientName"
-                  className="form-input"
-                  type="text"
-                  value={newIngredientName}
-                  onChange={(e) => setNewIngredientName(e.target.value)}
-                  placeholder="e.g., Baking Soda"
-                  required
-                />
+                <label htmlFor="name">Ingredient Name</label>
+                <input id="name" className="form-input" type="text" value={ingredientForm.name} onChange={(e) => setIngredientForm({...ingredientForm, name: e.target.value})} required />
               </div>
-              <button type="submit" className="submit-button">
-                <FaSave /> Save Ingredient
-              </button>
+              <div className="form-group">
+                <label htmlFor="description">Description (Optional)</label>
+                <textarea id="description" className="form-textarea" value={ingredientForm.description} onChange={(e) => setIngredientForm({...ingredientForm, description: e.target.value})} />
+              </div>
+              <button type="submit" className="submit-button"><FaSave /> Save Changes</button>
             </form>
           </div>
         </div>
       )}
 
       {/* --- Log Purchase Modal --- */}
-      {isPurchaseModalOpen && selectedIngredient && (
+      {modalState.mode === 'purchase' && modalState.selectedIngredient && (
           <div className="modal-overlay">
               <div className="modal-content">
                   <button className="modal-close-button" onClick={handleCloseModals}><FaTimes /></button>
-                  <h2>Log Purchase for {selectedIngredient.name}</h2>
+                  <h2>Log Purchase for {modalState.selectedIngredient.name}</h2>
                    <form onSubmit={handleLogPurchase}>
+                       {error && <div className="error-message form-feedback">{error}</div>}
                        <div className="form-group">
                            <label htmlFor="price">Total Price Paid</label>
                            <div className="input-with-icon">
