@@ -1,0 +1,182 @@
+/* Using a grid for the main two-column layout */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text-secondary);
+  margin-right: auto;
+}
+.back-link:hover {
+  color: var(--accent-color);
+}
+.detail-page-container .page-header {
+  justify-content: flex-end; 
+  position: relative;
+}
+.detail-page-container .page-header h1 {
+  text-align: right;
+}
+
+/* --- Left Panel: Recipe Info --- */
+.recipe-info-panel,
+.profit-calculator-panel {
+  background-color: var(--secondary-bg);
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.recipe-info-panel h2,
+.profit-calculator-panel h2 {
+  margin-top: 0;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scaling-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--primary-bg);
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.scaling-controls label {
+  font-weight: bold;
+}
+
+.scaling-controls input {
+  width: 80px;
+  padding: 0.5rem;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 5px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.scaled-ingredient-list {
+  list-style: none;
+  padding: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.scaled-ingredient-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.scaled-ingredient-list li:nth-child(even) {
+    background-color: rgba(0,0,0,0.1);
+}
+
+.scaled-ingredient-list .ing-name {
+  color: var(--text-primary);
+}
+
+.scaled-ingredient-list .ing-amount {
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+/* --- Right Panel: Profit Calculator --- */
+.cost-summary {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.cost-summary h4 {
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0.25rem 0;
+  font-weight: normal;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+.cost-summary p {
+    margin: 0;
+    font-size: 1.2rem;
+}
+.highlighted-cost {
+  font-size: 2rem !important;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.profit-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.profit-inputs label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.profit-inputs input {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.profit-results {
+  background-color: var(--primary-bg);
+  padding: 1.5rem;
+  border-radius: 5px;
+}
+.profit-results h4 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.result-grid > div {
+  background-color: var(--secondary-bg);
+  padding: 1rem;
+  border-radius: 5px;
+  text-align: center;
+}
+.result-grid span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+.result-grid strong {
+  font-size: 1.5rem;
+}
+.net-profit {
+    color: #2ecc71; 
+}
+
+@media (max-width: 992px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
