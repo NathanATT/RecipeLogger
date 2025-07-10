@@ -74,3 +74,30 @@ export interface CreateRecipeFromTextPayload {
   servings?: number;
   ingredients: ParsedIngredientPayload[];
 }
+
+export interface PurchaseQueryParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+// Type for the response from the purchases API
+export interface PurchaseRecord {
+  _id: string;
+  ingredientId: { _id: string; name: string; }; // Populated ingredient
+  price: number;
+  quantityPurchased: number;
+  purchaseUnit: string;
+  purchaseDate: string;
+}
+
+// Type for the paginated response from the purchases API
+export interface PurchasesResponse {
+  purchases: PurchaseRecord[];
+  totalPages: number;
+  currentPage: number;
+}

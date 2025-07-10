@@ -4,7 +4,9 @@ import type {
   Recipe, 
   Purchase, 
   RecipeCost,
-  CreateRecipeFromTextPayload
+  CreateRecipeFromTextPayload,
+  PurchasesResponse,
+  PurchaseQueryParams
 } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
@@ -35,6 +37,8 @@ export const createRecipeFromText = (data: CreateRecipeFromTextPayload) => axios
 // --- Purchase API Calls ---
 export const logPurchase = (purchaseData: Purchase) => 
   axios.post(`${API_URL}/purchases`, purchaseData);
+export const getPurchases = (params: PurchaseQueryParams) => 
+  axios.get<PurchasesResponse>(`${API_URL}/purchases`, { params });
 
 // --- Settings API Calls ---
 export const getSettings = () => axios.get<{ customToGramConversions: Record<string, number> }>(`${API_URL}/settings`);
