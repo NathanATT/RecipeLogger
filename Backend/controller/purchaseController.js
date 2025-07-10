@@ -20,7 +20,7 @@ module.exports = {
             res.status(error.statusCode || 500).json({message: 'Error logging purchase.', error: error.message});
         }
     },
-    managePurchases : async (req, res) => {
+    getAndManagePurchases : async (req, res) => {
         try {
             const query = req.query;
             const result = await purchaseQuery.findAndManagePurchases(query);
