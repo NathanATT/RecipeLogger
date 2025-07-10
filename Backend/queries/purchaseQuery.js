@@ -13,6 +13,47 @@ const findAllPurchases = async () => {
     }
 }
 
+/**
+ * Finds all purchases with advanced filtering, sorting, and pagination.
+ * @param {object} query - The query parameters from the request (e.g., req.query).
+ */
+const findAndManagePurchases = async (query) => {
+    const { page = 1, limit = 10, sortBy = 'purchaseDate', order = "desc", search = '', startDate, endDate } = query;
+    const filter = {};
+    if (search) {
+        const ingredients = await Ingredient.find({name: { $regex: search, $options: 'i' }}).select('_id');
+        filter.ingredientId = { $in: ingredientIds };
+    }
+    if (startDate || endDate) {
+        filter.purchaseDate = {};
+        if (startDate) {
+            filter.purchaseDate.$gte = new Date(startDate);
+        }
+        if (endDate) {
+            filter.purchaseDate.$lte = new Date(endDate);
+        }
+    }
+
+    const sortOptions = {[sortBy]: order === 'asc' ? 1 : -1};
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const purchases = await Purchase.find(filter)
+        .populate('ingredientId', 'name')
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(parseInt(limit));
+
+    const totalPurchases = await Purchase.countDocuments(filter);
+
+    return {
+        purchases,
+        totalPages: Math.ceil(totalPurchases / limit),
+        currentPage: parseInt(page),
+    };
+};
+
+
 const createPurchaseAndUpdateIngredient = async (purchaseData) => {
   try { 
     const { ingredientId, quantityPurchased, purchaseUnit, price } = purchaseData;
@@ -51,5 +92,6 @@ const createPurchaseAndUpdateIngredient = async (purchaseData) => {
 
 module.exports = {
     findAllPurchases,
-    createPurchaseAndUpdateIngredient
+    createPurchaseAndUpdateIngredient,
+    findAndManagePurchases
 };
