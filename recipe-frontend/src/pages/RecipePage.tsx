@@ -6,11 +6,10 @@ import './RecipePage.css';
 import { FaPlus, FaDollarSign, FaTimes, FaEdit, FaTrash, FaSave } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { parseIngredientsFromText } from '../utils/recipeParser';
+import { isUnitValid } from '../services/validationService';
 
-// Define a type for our form state
 type RecipeFormState = Omit<Recipe, '_id' | 'createdAt' | 'updatedAt'> & { id?: string };
 
-// Define a type for the expected structure of an Axios error response
 interface ApiError {
   response?: {
     data?: {
@@ -20,7 +19,6 @@ interface ApiError {
 }
 
 const RecipesPage: React.FC = () => {
-  // --- State ---
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,7 +42,7 @@ const RecipesPage: React.FC = () => {
   description: '',
   instructions: '',
   servings: 1,
-  ingredientsText: '', // A single string for the textarea
+  ingredientsText: '', 
   });
 
   
@@ -82,7 +80,7 @@ const RecipesPage: React.FC = () => {
     setRecipeForm(initialFormState);
   };
   
-  // -------- Form Input Handlers (re-usable for create/edit) --------
+  // -------- Form Input Handlers --------
   const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const val = name === 'servings' ? (parseInt(value, 10) || 1) : value;
@@ -160,14 +158,22 @@ const RecipesPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     
-    // 1. Parse the text from the textarea
     const parsedIngredients = parseIngredientsFromText(textRecipeForm.ingredientsText);
     if (parsedIngredients.length === 0) {
       setError("Could not parse any valid ingredients. Please check the format (e.g., 'flour 100 g').");
       return;
     }
+
+    // Validate each parsed ingredient's unit
+    for (const ing of parsedIngredients) {
+      const isValid = await isUnitValid(ing.unit);
+      if (!isValid) {
+        setError(`Invalid unit "${ing.unit}" for ingredient "${ing.name}". Please use a valid unit (e.g., g, cup, piece).`);
+        return;
+      }
+    }
     
-    // 2. Prepare the payload for the new API endpoint
+    // Setup payload
     const payload = {
       recipeName: textRecipeForm.recipeName,
       description: textRecipeForm.description,
@@ -181,17 +187,17 @@ const RecipesPage: React.FC = () => {
     };
 
     try {
-      // 3. Call the new endpoint
-      await api.createRecipeFromText(payload); // Make sure this exists in your apiService
-      handleCloseModal(); // You'll need a handleCloseModal function
-      loadData(); // Refresh the recipe list
+      await api.createRecipeFromText(payload); 
+      handleCloseModal(); 
+      loadData(); 
     } catch (err) {
       setError('Failed to create recipe.');
       console.error(err)
     }
   };
+
   
-  // -------- Render Logic --------
+  // Extra loading and errors
   if (isLoading) return <div className="loading-spinner">Loading...</div>;
   if (error && !modal.mode) return <div className="error-message page-error">{error}</div>;
 
@@ -199,13 +205,10 @@ return (
     <div className="page-container">
       <header className="page-header">
         <h1>My Recipes</h1>
-        {/* This button now opens the text-based creation modal */}
         <button className="action-button" onClick={() => handleOpenModal('create')}>
           <FaPlus /> Create Recipe
         </button>
       </header>
-      
-      {/* Conditionally render a page-level error if no modal is open */}
       {error && !modal.mode && <div className="error-message page-error">{error}</div>}
 
       <div className="recipe-grid">
@@ -223,18 +226,14 @@ return (
         ))}
       </div>
 
-      {/* --- MODAL SECTION --- */}
-
+{/* --- MODAL SECTION --- */}
 {/* --- Create/Edit Recipe Modal --- */}
 {(modal.mode === 'create' || modal.mode === 'edit') && (
   <div className="modal-overlay">
     <div className="modal-content">
       <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
       <h2>{modal.mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}</h2>
-      
-      {/* --- Conditional Rendering for the Form --- */}
       {modal.mode === 'create' ? (
-        // --- Text-Based Create Form ---
         <form onSubmit={handleTextRecipeSubmit}>
           {error && <div className="error-message form-feedback">{error}</div>}
           
