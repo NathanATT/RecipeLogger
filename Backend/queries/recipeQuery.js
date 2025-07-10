@@ -71,7 +71,7 @@ const updateRecipe = async (recipeId, recipeData) => {
 }
 
 // Function to delete a recipe
-const deleteRecipe = async (recipeId) => {
+const deleteRecipeById = async (recipeId) => {
     try {
         const deletedRecipe = await Recipe.findByIdAndDelete(recipeId);
         if (!deletedRecipe) {
@@ -172,7 +172,7 @@ module.exports = {
     findRecipeById,
     createRecipe,
     updateRecipe,
-    deleteRecipe,
+    deleteRecipeById,
     calculateRecipeCost,
     createRecipeFromText
 };

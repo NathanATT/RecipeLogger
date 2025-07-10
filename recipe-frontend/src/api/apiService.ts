@@ -3,7 +3,8 @@ import type {
   Ingredient, 
   Recipe, 
   Purchase, 
-  RecipeCost 
+  RecipeCost,
+  CreateRecipeFromTextPayload
 } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
@@ -29,6 +30,7 @@ export const updateRecipe = (id: string, recipeData: Omit<Recipe, '_id'>) =>
   axios.put<Recipe>(`${API_URL}/recipes/${id}`, recipeData);
 export const deleteRecipe = (id: string) =>
   axios.delete(`${API_URL}/recipes/${id}`);
+export const createRecipeFromText = (data: CreateRecipeFromTextPayload) => axios.post(`${API_URL}/recipes/from-text`, data);
 
 // --- Purchase API Calls ---
 export const logPurchase = (purchaseData: Purchase) => 

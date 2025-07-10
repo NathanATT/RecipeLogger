@@ -39,7 +39,15 @@ const RecipesPage: React.FC = () => {
     ingredients: [{ ingredientId: '', ingredientName: '', amount: 0, unit: 'g' }],
   };
   const [recipeForm, setRecipeForm] = useState<RecipeFormState>(initialFormState);
+  const [textRecipeForm, setTextRecipeForm] = useState({
+  recipeName: '',
+  description: '',
+  instructions: '',
+  servings: 1,
+  ingredientsText: '', // A single string for the textarea
+  });
 
+  
   // -------- Data Fetching --------
   useEffect(() => { loadData(); }, []);
   const loadData = async () => {
@@ -146,95 +154,214 @@ const RecipesPage: React.FC = () => {
       setError(apiError.response?.data?.message || 'Failed to calculate recipe cost.');
     }
   };
+
+  // -------- Text Parsing --------
+  const handleTextRecipeSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    
+    // 1. Parse the text from the textarea
+    const parsedIngredients = parseIngredientsFromText(textRecipeForm.ingredientsText);
+    if (parsedIngredients.length === 0) {
+      setError("Could not parse any valid ingredients. Please check the format (e.g., 'flour 100 g').");
+      return;
+    }
+    
+    // 2. Prepare the payload for the new API endpoint
+    const payload = {
+      recipeName: textRecipeForm.recipeName,
+      description: textRecipeForm.description,
+      instructions: textRecipeForm.instructions,
+      servings: textRecipeForm.servings,
+      ingredients: parsedIngredients.map(ing => ({
+        name: ing.name,
+        amount: ing.amount,
+        unit: ing.unit,
+      })),
+    };
+
+    try {
+      // 3. Call the new endpoint
+      await api.createRecipeFromText(payload); // Make sure this exists in your apiService
+      handleCloseModal(); // You'll need a handleCloseModal function
+      loadData(); // Refresh the recipe list
+    } catch (err) {
+      setError('Failed to create recipe.');
+      console.error(err)
+    }
+  };
   
   // -------- Render Logic --------
   if (isLoading) return <div className="loading-spinner">Loading...</div>;
   if (error && !modal.mode) return <div className="error-message page-error">{error}</div>;
 
-  return (
+return (
     <div className="page-container">
       <header className="page-header">
         <h1>My Recipes</h1>
+        {/* This button now opens the text-based creation modal */}
         <button className="action-button" onClick={() => handleOpenModal('create')}>
           <FaPlus /> Create Recipe
         </button>
       </header>
+      
+      {/* Conditionally render a page-level error if no modal is open */}
+      {error && !modal.mode && <div className="error-message page-error">{error}</div>}
+
       <div className="recipe-grid">
         {recipes.map(recipe => (
           <div key={recipe._id} className="recipe-card">
             <h3>{recipe.recipeName}</h3>
             <p>{recipe.description || 'No description provided.'}</p>
             <div className="card-actions">
-              <Link to={`/recipe/${recipe._id}`} className="action-link-button">View detailed cost</Link>
+              <Link to={`/recipe/${recipe._id}`} className="action-link-button">View & Cost</Link>
               <button className="icon-button" title="Edit" onClick={() => handleOpenModal('edit', recipe)}><FaEdit/></button>
-              <button className="icon-button" title="Cost" onClick={() => handleCalculateCost(recipe._id)}><FaDollarSign/></button>
+              <button className="icon-button" title="Quick Cost" onClick={() => handleCalculateCost(recipe._id)}><FaDollarSign/></button>
               <button className="icon-button delete" title="Delete" onClick={() => handleDeleteRecipe(recipe._id)}><FaTrash/></button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* -------- Create/Edit Recipe Modal -------- */}
-      {(modal.mode === 'create' || modal.mode === 'edit') && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
-            <h2>{modal.mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}</h2>
-            <form onSubmit={handleRecipeSubmit} className="recipe-form">
-              {error && <div className="error-message form-feedback">{error}</div>}
-              <div className="form-group">
-                <label>Recipe Name</label>
-                <input name="recipeName" value={recipeForm.recipeName} onChange={handleFormInputChange} required className="form-input"/>
-              </div>
-              <div className="form-group">
-                <label>Servings</label>
-                <input name="servings" type="number" min="1" value={recipeForm.servings} onChange={handleFormInputChange} required className="form-input"/>
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea name="description" value={recipeForm.description} onChange={handleFormInputChange} className="form-textarea"/>
-              </div>
-              <div className="form-group">
-                <label>Instructions</label>
-                <textarea name="instructions" value={recipeForm.instructions} onChange={handleFormInputChange} required className="form-textarea"/>
-              </div>
-              
-              <h4>Ingredients</h4>
-              {recipeForm.ingredients.map((ing, index) => (
-                <div key={index} className="ingredient-form-row">
-                  <select value={ing.ingredientId} className="form-select" onChange={e => handleIngredientChange(index, 'ingredientId', e.target.value)} required>
-                    <option value="" disabled>Select Ingredient</option>
-                    {ingredients.map(masterIng => (
-                      <option key={masterIng._id} value={masterIng._id}>{masterIng.name}</option>
-                    ))}
-                  </select>
-                  <input type="number" value={ing.amount} className="form-input" onChange={e => handleIngredientChange(index, 'amount', e.target.value)} placeholder="Amount" required />
-                  <input value={ing.unit} className="form-input" onChange={e => handleIngredientChange(index, 'unit', e.target.value)} placeholder="Unit (g, cup)" required />
-                  <button type="button" className="delete-rule-btn" onClick={() => removeIngredientField(index)}><FaTimes /></button>
-                </div>
-              ))}
-              <button type="button" className="add-ingredient-button" onClick={addIngredientField}>+ Add Ingredient</button>
-              <button type="submit" className="submit-button"><FaSave /> Save Recipe</button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* --- MODAL SECTION --- */}
+
+{/* --- Create/Edit Recipe Modal --- */}
+{(modal.mode === 'create' || modal.mode === 'edit') && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
+      <h2>{modal.mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}</h2>
       
-      {/* -------- Recipe Cost Modal -------- */}
+      {/* --- Conditional Rendering for the Form --- */}
+      {modal.mode === 'create' ? (
+        // --- Text-Based Create Form ---
+        <form onSubmit={handleTextRecipeSubmit}>
+          {error && <div className="error-message form-feedback">{error}</div>}
+          
+          <div className="form-group">
+            <label htmlFor="recipeName-text">Recipe Name</label>
+            <input
+              id="recipeName-text"
+              className="form-input"
+              value={textRecipeForm.recipeName}
+              onChange={(e) => setTextRecipeForm({ ...textRecipeForm, recipeName: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="servings-text">Servings</label>
+            <input
+              id="servings-text"
+              type="number"
+              min="1"
+              className="form-input"
+              value={textRecipeForm.servings}
+              onChange={(e) => setTextRecipeForm({ ...textRecipeForm, servings: parseInt(e.target.value) || 1 })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description-text">Description (Optional)</label>
+            <textarea
+              id="description-text"
+              className="form-textarea"
+              rows={3}
+              value={textRecipeForm.description}
+              onChange={(e) => setTextRecipeForm({ ...textRecipeForm, description: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="instructions-text">Instructions</label>
+            <textarea
+              id="instructions-text"
+              className="form-textarea"
+              rows={6}
+              value={textRecipeForm.instructions}
+              onChange={(e) => setTextRecipeForm({ ...textRecipeForm, instructions: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="ingredientsText">Ingredients</label>
+            <p className="settings-description">
+              Enter one ingredient per line: <strong>name amount unit</strong>
+            </p>
+            <textarea
+              id="ingredientsText"
+              className="form-textarea"
+              rows={10}
+              placeholder={"flour 250 g\nsugar 125 g..."}
+              value={textRecipeForm.ingredientsText}
+              onChange={(e) => setTextRecipeForm({ ...textRecipeForm, ingredientsText: e.target.value })}
+              required
+            />
+          </div>
+          <button type="submit" className="submit-button"><FaSave /> Create Recipe</button>
+        </form>
+      ) : (
+        // --- Detailed Edit Form ---
+        <form onSubmit={handleRecipeSubmit}>
+          {error && <div className="error-message form-feedback">{error}</div>}
+          <div className="form-group">
+            <label htmlFor="recipeName-detail">Recipe Name</label>
+            <input id="recipeName-detail" name="recipeName" value={recipeForm.recipeName} onChange={handleFormInputChange} required className="form-input"/>
+          </div>
+          <div className="form-group">
+              <label htmlFor="servings-detail">Servings</label>
+              <input id="servings-detail" name="servings" type="number" min="1" value={recipeForm.servings} onChange={handleFormInputChange} required className="form-input"/>
+          </div>
+          <div className="form-group">
+            <label htmlFor="description-detail">Description (Optional)</label>
+            <textarea id="description-detail" name="description" className="form-textarea" rows={3} value={recipeForm.description} onChange={handleFormInputChange}/>
+          </div>
+          <div className="form-group">
+            <label htmlFor="instructions-detail">Instructions</label>
+            <textarea id="instructions-detail" name="instructions" className="form-textarea" rows={6} value={recipeForm.instructions} onChange={handleFormInputChange} required/>
+          </div>
+          
+          <h4>Ingredients</h4>
+          {recipeForm.ingredients.map((ing, index) => (
+            <div key={index} className="ingredient-form-row">
+              <select value={ing.ingredientId} className="form-select" onChange={e => handleIngredientChange(index, 'ingredientId', e.target.value)} required>
+                <option value="" disabled>Select Ingredient</option>
+                {ingredients.map(masterIng => (
+                  <option key={masterIng._id} value={masterIng._id}>{masterIng.name}</option>
+                ))}
+              </select>
+              <input type="number" value={ing.amount} className="form-input" onChange={e => handleIngredientChange(index, 'amount', e.target.value)} placeholder="Amount" required />
+              <input value={ing.unit} className="form-input" onChange={e => handleIngredientChange(index, 'unit', e.target.value)} placeholder="Unit (g, cup)" required />
+              <button type="button" className="delete-rule-btn" onClick={() => removeIngredientField(index)}><FaTimes /></button>
+            </div>
+          ))}
+          <button type="button" className="add-ingredient-button" onClick={addIngredientField}>+ Add Ingredient</button>
+          <button type="submit" className="submit-button"><FaSave /> Save Changes</button>
+        </form>
+      )}
+    </div>
+  </div>
+)}
+      {/* --- Recipe Cost Modal --- */}
       {modal.mode === 'cost' && modal.data && (
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="modal-close-button" onClick={handleCloseModal}><FaTimes /></button>
-            <h2>Cost for {(modal.data as RecipeCost).recipeName}</h2>
-            <h3 className="total-cost">Total Cost: ${(modal.data as RecipeCost).totalCost.toFixed(2)}</h3>
-            <ul className="cost-breakdown">
-                {(modal.data as RecipeCost).ingredientCosts.map((item, index) => (
-                    <li key={index}>
-                        <span>{item.name}</span>
-                        <span>${item.cost.toFixed(2)}</span>
-                    </li>
-                ))}
-            </ul>
+            {'totalCost' in modal.data && (
+              <>
+                <h2>Cost for {modal.data.recipeName}</h2>
+                <h3 className="total-cost">Total Cost: ${modal.data.totalCost.toFixed(2)}</h3>
+                <ul className="cost-breakdown">
+                    {modal.data.ingredientCosts.map((item, index) => (
+                        <li key={index}>
+                            <span>{item.name}</span>
+                            <span>${item.cost.toFixed(2)}</span>
+                        </li>
+                    ))}
+                </ul>
+              </>
+            )}
           </div>
         </div>
       )}
