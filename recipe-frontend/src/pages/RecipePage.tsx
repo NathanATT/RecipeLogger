@@ -271,7 +271,7 @@ return (
             />
           </div>
 
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="instructions-text">Instructions</label>
             <textarea
               id="instructions-text"
@@ -281,7 +281,7 @@ return (
               onChange={(e) => setTextRecipeForm({ ...textRecipeForm, instructions: e.target.value })}
               required
             />
-          </div>
+          </div> */}
 
           <div className="form-group">
             <label htmlFor="ingredientsText">Ingredients</label>
@@ -316,10 +316,10 @@ return (
             <label htmlFor="description-detail">Description (Optional)</label>
             <textarea id="description-detail" name="description" className="form-textarea" rows={3} value={recipeForm.description} onChange={handleFormInputChange}/>
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="instructions-detail">Instructions</label>
             <textarea id="instructions-detail" name="instructions" className="form-textarea" rows={6} value={recipeForm.instructions} onChange={handleFormInputChange} required/>
-          </div>
+          </div> */}
           
           <h4>Ingredients</h4>
           {recipeForm.ingredients.map((ing, index) => (
