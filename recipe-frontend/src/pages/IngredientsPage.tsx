@@ -140,7 +140,9 @@ const IngredientsPage: React.FC = () => {
             {ingredients.map((ing) => (
               <tr key={ing._id}>
                 <td>{ing.name}</td>
-                <td>${ing.latestPricePerGram > 0 ? ing.latestPricePerGram.toFixed(6) : 'N/A'}</td>
+                <td>${ing.latestPricePerGram > 1 ? ing.latestPricePerGram.toFixed(2) 
+                      : ing.latestPricePerGram < 1 && ing.latestPricePerGram > 0 ? ing.latestPricePerGram.toFixed(6) 
+                      :'N/A'}</td>
                 <td>{ing.lastUpdated ? new Date(ing.lastUpdated).toLocaleDateString() : 'N/A'}</td>
                 <td className="action-cell">
                   <button className="icon-button" onClick={() => handleOpenModal('purchase', ing)} title="Log New Purchase">
