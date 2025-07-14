@@ -15,8 +15,8 @@ const getValidUnits = async (): Promise<Set<string>> => {
     const customUnits = Object.keys(settingResponse.data.customToGramConversions);
 
     const standardMassUnits = convert().possibilities('mass');
-    const standardVolumeUnits = convert().possibilities('volume');
-    validUnits = new Set([...standardMassUnits, ...standardVolumeUnits, ...customUnits]);
+    //const standardVolumeUnits = convert().possibilities('volume');
+    validUnits = new Set([...standardMassUnits, ...customUnits]);
 
     return validUnits;
 };

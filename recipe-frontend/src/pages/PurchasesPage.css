@@ -1,0 +1,162 @@
+/* --- Main Page Container --- */
+.purchases-page-container {
+  max-width: none;
+}
+
+.detail-page-container {
+  max-width: none; 
+}
+
+/* --- Integrated Filter Bar --- */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 1.5rem;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.filters-container .form-group {
+  min-width: 220px;
+  margin-bottom: 0;
+}
+
+.filters-container .search-filter {
+  flex: 1; 
+}
+
+
+/* --- Table Container & Styled Table --- */
+.table-container {
+  flex-grow: 1; 
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* --- Table Header Styling --- */
+.styled-table thead tr {
+  background-color: #111a2c;
+  text-align: left;
+}
+
+.styled-table th {
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+/* Style for headers that are sortable */
+.styled-table th[data-sortable="true"] {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.styled-table th[data-sortable="true"]:hover {
+  color: var(--text-primary);
+}
+
+.sort-icon {
+  color: var(--text-secondary);
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon.active {
+  color: var(--accent-color);
+}
+
+/* --- Table Body Styling --- */
+.styled-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.styled-table td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: none;
+}
+
+.styled-table tbody tr:hover {
+  background-color: rgba(233, 69, 96, 0.05);
+}
+
+/* --- Specific Column Widths & Styles for Readability --- */
+.styled-table th:nth-child(1), .styled-table td:nth-child(1) { width: 40%; } /* Ingredient */
+.styled-table th:nth-child(2), .styled-table td:nth-child(2) { width: 20%; text-align: right; } /* Price */
+.styled-table th:nth-child(3), .styled-table td:nth-child(3) { width: 20%; text-align: right; } /* Quantity */
+.styled-table th:nth-child(4), .styled-table td:nth-child(4) { width: 20%; text-align: right; } /* Date */
+
+.styled-table th:nth-child(1) { text-align: left; }
+
+.styled-table td:nth-child(2) {
+  font-family: 'Courier New', Courier, monospace;
+  color: #2ecc71;
+}
+
+.styled-table td:nth-child(3),
+.styled-table td:nth-child(4) {
+    color: var(--text-secondary);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Special Rows (Loading/Empty/Error) --- */
+.empty-row td, .loading-row td {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+
+/* --- Pagination --- */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.pagination-container button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--secondary-bg);
+  color: var(--text-primary);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-container button:hover:not(:disabled) {
+    background-color: var(--sidebar-bg);
+}
+
+.pagination-container button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-container span {
+  font-weight: bold;
+  color: var(--text-secondary);
+}

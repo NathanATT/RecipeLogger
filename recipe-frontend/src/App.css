@@ -77,7 +77,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Style for the active NavLink */
 .sidebar-nav-list li a.active {
   background-color: var(--secondary-bg);
   color: var(--text-primary);
@@ -88,7 +87,7 @@ body {
 .nav-icon {
   margin-right: 1rem;
   font-size: 1.5rem;
-  min-width: 24px; /* Ensures alignment */
+  min-width: 24px; 
 }
 
 
@@ -100,8 +99,15 @@ body {
   transition: margin-left 0.3s ease; 
 }
 
+.page-container {
+  width: 100%;
+  max-width: 1200px; 
+  margin-left: auto;
+  margin-right: auto;
+}
 
-/* --- Allow for screen size changes--- */
+
+
 @media (max-width: 768px) {
   :root {
     --sidebar-width: 60px; 
@@ -118,11 +124,11 @@ body {
   }
   
   .sidebar-nav-list li a {
-    justify-content: center; /* Center the icon */
+    justify-content: center; 
     padding: 1rem 0;
   }
   
   .nav-icon {
-    margin-right: 0; /* Remove margin when text is hidden */
+    margin-right: 0; 
   }
 }

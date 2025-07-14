@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { GiCook, GiThreeLeaves, GiSettingsKnobs } from 'react-icons/gi'; // Example icons
+import { FaShoppingBasket } from 'react-icons/fa';
 
 import RecipesPage from './pages/RecipePage';
 import IngredientsPage from './pages/IngredientsPage';
 import SettingsPage from './pages/SettingsPage';
 import RecipeDetailPage from './pages/RecipeDetailsPage';
+import PurchasesPage from './pages/PurchasesPage';
 import './App.css';
 import './styles/forms.css'
 
@@ -32,6 +34,12 @@ const App: React.FC = () => {
               </NavLink>
             </li>
             <li>
+              <NavLink to="/purchases">
+                <FaShoppingBasket className="nav-icon" />
+                <span>Purchases</span>
+              </NavLink>
+            </li>
+            <li>
               <NavLink to="/settings">
                 <GiSettingsKnobs className="nav-icon" />
                 <span>Settings</span>
@@ -47,6 +55,7 @@ const App: React.FC = () => {
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/recipe/:id" element={<RecipeDetailPage />} />
+            <Route path="/purchases" element={<PurchasesPage />} />
           </Routes>
         </main>
       </div>

@@ -1,8 +1,8 @@
 /* --- Page Layout & Header --- */
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.main-content.full-width {
+  max-width: none;
 }
+
 
 .page-header {
   display: flex;
@@ -152,7 +152,7 @@
 }
 
 .modal-content form {
-  width: 100%; /* Makes sure the form doesn't overflow */
+  width: 100%; 
   margin-top: 1.5rem;
 }
 
