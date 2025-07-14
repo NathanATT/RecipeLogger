@@ -4,6 +4,7 @@ import * as api from '../api/apiService';
 import type { Recipe, RecipeCost } from '../types';
 import './RecipeDetailsPage.css'; // New CSS file
 import { FaArrowLeft, FaCalculator } from 'react-icons/fa';
+import { formatNumberWithCommas } from '../utils/utilities';
 
 const RecipeDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -136,11 +137,11 @@ const RecipeDetailPage: React.FC = () => {
             <div className="profit-results">
               <h4>Profit Analysis</h4>
               <div className="result-grid">
-                <div><span>Total Revenue</span><strong>${revenue.toFixed(2)}</strong></div>
-                <div><span>Total Cost</span><strong>-${scaledCost.toFixed(2)}</strong></div>
-                <div><span>Net Profit</span><strong className="net-profit">${totalProfit.toFixed(2)}</strong></div>
-                <div><span>Profit per Item</span><strong>${profitPerItem.toFixed(2)}</strong></div>
-                <div><span>Profit Margin</span><strong>{profitMargin.toFixed(1)}%</strong></div>
+                <div><span>Total Revenue</span><strong>${formatNumberWithCommas(revenue.toFixed(2))}</strong></div>
+                <div><span>Total Cost</span><strong>-${formatNumberWithCommas(scaledCost.toFixed(2))}</strong></div>
+                <div><span>Net Profit</span><strong className="net-profit">${formatNumberWithCommas(totalProfit.toFixed(2))}</strong></div>
+                <div><span>Profit per Item</span><strong>${formatNumberWithCommas(profitPerItem.toFixed(2))}</strong></div>
+                <div><span>Profit Margin</span><strong>{formatNumberWithCommas(profitMargin.toFixed(1))}%</strong></div>
               </div>
             </div>
           )}

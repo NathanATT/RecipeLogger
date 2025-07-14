@@ -5,6 +5,7 @@ import type { PurchaseQueryParams } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import './PurchasesPage.css';
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { formatNumberWithCommas } from '../utils/utilities';
 
 const PurchasesPage: React.FC = () => {
   const [data, setData] = useState<PurchasesResponse | null>(null);
@@ -180,7 +181,7 @@ return (
                 data?.purchases.map(p => (
                   <tr key={p._id}>
                     <td>{p.ingredientId.name}</td>
-                    <td>${p.price.toFixed(2)}</td>
+                    <td>${formatNumberWithCommas(p.price.toFixed(2))}</td>
                     <td>{p.quantityPurchased} {p.purchaseUnit}</td>
                     <td style={{ textAlign: 'right' }}>{new Date(p.purchaseDate).toLocaleDateString()}</td>
                   </tr>
