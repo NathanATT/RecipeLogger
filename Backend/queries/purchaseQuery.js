@@ -18,38 +18,64 @@ const findAllPurchases = async () => {
  * @param {object} query - The query parameters from the request (e.g., req.query).
  */
 const findAndManagePurchases = async (query) => {
-    const { page = 1, limit = 10, sortBy = 'purchaseDate', order = "desc", search = '', startDate, endDate } = query;
+    const {
+        page = 1,
+        limit = 10,
+        sortBy = "purchaseDate",
+        order = "desc",
+        search = "",
+        startDate,
+        endDate,
+    } = query;
+
     const filter = {};
+
     if (search) {
-        const ingredients = await Ingredient.find({name: { $regex: search, $options: 'i' }}).select('_id');
+        const ingredients = await Ingredient.find({
+        name: { $regex: search, $options: "i" },
+        }).select("_id");
+
+        const ingredientIds = ingredients.map((ing) => ing._id);
+
+        if (ingredientIds.length === 0) {
+        return {
+            purchases: [],
+            totalPages: 0,
+            currentPage: 1,
+        };
+        }
+
         filter.ingredientId = { $in: ingredientIds };
     }
+
     if (startDate || endDate) {
         filter.purchaseDate = {};
-        if (startDate) {
-            filter.purchaseDate.$gte = new Date(startDate);
-        }
-        if (endDate) {
-            filter.purchaseDate.$lte = new Date(endDate);
-        }
+        if (startDate) filter.purchaseDate.$gte = new Date(startDate);
+        if (endDate) filter.purchaseDate.$lte = new Date(endDate);
     }
 
-    const sortOptions = {[sortBy]: order === 'asc' ? 1 : -1};
+    const sortOptions = {};
+    if (sortBy === "ingredientId.name") {
+        sortOptions["purchaseDate"] = order === "asc" ? 1 : -1;
+    } else {
+        sortOptions[sortBy] = order === "asc" ? 1 : -1;
+    }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
     const purchases = await Purchase.find(filter)
-        .populate('ingredientId', 'name')
+        .populate("ingredientId", "name")
         .sort(sortOptions)
         .skip(skip)
-        .limit(parseInt(limit));
+        .limit(parseInt(limit, 10))
+        .lean(); // Use .lean() for faster read-only queries
 
     const totalPurchases = await Purchase.countDocuments(filter);
 
     return {
         purchases,
         totalPages: Math.ceil(totalPurchases / limit),
-        currentPage: parseInt(page),
+        currentPage: parseInt(page, 10),
     };
 };
 
@@ -84,7 +110,6 @@ const createPurchaseAndUpdateIngredient = async (purchaseData) => {
     await ingredient.save();
     return { purchase };
   } catch (e) {
-      // This will now catch ANY error from the block above and log it clearly.
       console.error('--- FATAL ERROR in createPurchaseAndUpdateIngredient ---');
       console.error(e);
   }
