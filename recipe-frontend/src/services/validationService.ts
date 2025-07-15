@@ -1,14 +1,14 @@
 import convert from 'convert-units';    
 import { getSettings } from '../api/apiService';
-let validUnits: Set<string> | null = null;
+let validUnitsSet: Set<string> | null = null;
 
 /**
  * Fetches all possible valid units (custom + standard) and caches them.
  * @returns {Promise<Set<string>>} A Set containing all valid unit strings.
  */
 const getValidUnits = async (): Promise<Set<string>> => {
-    if (validUnits) {
-        return validUnits; 
+    if (validUnitsSet) {
+        return validUnitsSet; 
     }
 
     const settingResponse = await getSettings();
@@ -16,9 +16,9 @@ const getValidUnits = async (): Promise<Set<string>> => {
 
     const standardMassUnits = convert().possibilities('mass');
     //const standardVolumeUnits = convert().possibilities('volume');
-    validUnits = new Set([...standardMassUnits, ...customUnits]);
-
-    return validUnits;
+    const allUnits = [...customUnits, ...standardMassUnits].map(u => u.toLowerCase());
+    validUnitsSet = new Set(allUnits);
+    return validUnitsSet;
 };
 
 /**
