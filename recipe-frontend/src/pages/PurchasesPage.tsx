@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import * as api from '../api/apiService';
 import type { PurchasesResponse } from '../types'; 
-import type { PurchaseQueryParams } from '../types'; 
+import type { PurchaseQueryParams , Ingredient } from '../types'; 
 import { useDebounce } from '../hooks/useDebounce';
 import './PurchasesPage.css';
-import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaSort, FaSortUp, FaSortDown, FaPlus, FaTimes, FaDollarSign, FaSave } from 'react-icons/fa';
 import { formatNumberWithCommas } from '../utils/utilities';
 
 const PurchasesPage: React.FC = () => {
@@ -21,6 +22,15 @@ const PurchasesPage: React.FC = () => {
     search: '',
     startDate: '',
     endDate: ''
+  });
+
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState<boolean>(false);
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]); // To populate the dropdown
+  const [purchaseForm, setPurchaseForm] = useState({
+    ingredientId: '', // User will select this from a dropdown
+    price: '',
+    quantity: '',
+    unit: 'kg'
   });
 
   // Debounce the search term to avoid too many API calls
@@ -62,7 +72,20 @@ const PurchasesPage: React.FC = () => {
       }
     };
 
+    const fetchAllIngredients = async () => {
+      try {
+        const response = await api.getIngredients();
+        setAllIngredients(response.data);
+      } catch (err) {
+        console.error("Failed to load ingredient list for modal.", err);
+        // This error is less critical, so we might not set the main page error state
+      }
+    };
+
     fetchPurchases();
+    if (allIngredients.length === 0) {
+      fetchAllIngredients();
+    }
   }, [
     debouncedSearchTerm, 
     queryParams.page, 
@@ -70,8 +93,62 @@ const PurchasesPage: React.FC = () => {
     queryParams.order, 
     queryParams.startDate, 
     queryParams.endDate,
-    queryParams.limit 
+    queryParams.limit,
+    allIngredients.length
   ]);
+
+  const handleOpenPurchaseModal = () => {
+    setError(null);
+    setIsPurchaseModalOpen(true);
+  };
+
+  const handleClosePurchaseModal = () => {
+    setIsPurchaseModalOpen(false);
+    // Reset form state on close
+    setPurchaseForm({ ingredientId: '', price: '', quantity: '', unit: 'kg' });
+  };
+  
+  const handlePurchaseFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setPurchaseForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleLogPurchaseSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!purchaseForm.ingredientId || !purchaseForm.price || !purchaseForm.quantity) {
+      setError("Please select an ingredient and fill out all fields.");
+      return;
+    }
+    
+    try {
+      await api.logPurchase({
+        ingredientId: purchaseForm.ingredientId,
+        price: parseFloat(purchaseForm.price),
+        quantityPurchased: parseFloat(purchaseForm.quantity),
+        purchaseUnit: purchaseForm.unit,
+      });
+      handleClosePurchaseModal();
+      // Refetch the purchases list to show the new entry.
+      // We can do this by just changing a query param that will trigger the useEffect.
+      // A simple way is to toggle the sort order, or just refetch directly.
+      // Let's create a dedicated refetch function for clarity.
+      refetchPurchases();
+    } catch (err) {
+      setError("Failed to log purchase.");
+      console.error("Error logging purchase:", err);
+    }
+  };
+  
+  // A new function to manually trigger a refetch of the purchases data
+  const refetchPurchases = async () => {
+      setIsLoading(true);
+      const params = { ...queryParams, search: debouncedSearchTerm };
+      // ... (same logic as in useEffect to build and send params)
+      const response = await api.getPurchases(params);
+      setData(response.data);
+      setIsLoading(false);
+  };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -104,6 +181,9 @@ return (
     <div className="page-container purchases-page-container">
       <header className="page-header">
         <h1>Purchase History</h1>
+        <button className="action-button" onClick={handleOpenPurchaseModal}>
+          <FaPlus /> Log New Purchase
+        </button>
       </header>
       <div className="filters-container">
         <div className="form-group search-filter">
@@ -209,6 +289,61 @@ return (
           >
             Next
           </button>
+        </div>
+      )}
+      {isPurchaseModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close-button" onClick={handleClosePurchaseModal}><FaTimes /></button>
+            <h2>Log New Purchase</h2>
+            <form onSubmit={handleLogPurchaseSubmit}>
+              {error && <div className="error-message form-feedback">{error}</div>}
+              
+              <div className="form-group">
+                <label htmlFor="ingredientId">Ingredient</label>
+                <select 
+                  id="ingredientId"
+                  name="ingredientId"
+                  className="form-select"
+                  value={purchaseForm.ingredientId}
+                  onChange={handlePurchaseFormChange}
+                  required
+                >
+                  <option value="" disabled>Select an ingredient...</option>
+                  {allIngredients.map(ing => (
+                    <option key={ing._id} value={ing._id}>{ing.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="price">Total Price Paid</label>
+                <div className="input-with-icon">
+                  <FaDollarSign className="input-icon" />
+                  <input id="price" name="price" type="number" step="0.01" className="form-input" placeholder="e.g., 10.50" value={purchaseForm.price} onChange={handlePurchaseFormChange} required />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="quantity">Quantity Purchased</label>
+                <input id="quantity" name="quantity" type="number" step="0.01" className="form-input" placeholder="e.g., 5" value={purchaseForm.quantity} onChange={handlePurchaseFormChange} required />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="unit">Purchase Unit</label>
+                <select id="unit" name="unit" className="form-select" value={purchaseForm.unit} onChange={handlePurchaseFormChange}>
+                  <option value="kg">Kilogram (kg)</option>
+                  <option value="g">Gram (g)</option>
+                  <option value="lb">Pound (lb)</option>
+                  <option value="oz">Ounce (oz)</option>
+                </select>
+              </div>
+
+              <button type="submit" className="submit-button">
+                <FaSave /> Save Purchase
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
