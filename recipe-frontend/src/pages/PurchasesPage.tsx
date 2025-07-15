@@ -7,6 +7,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import './PurchasesPage.css';
 import { FaSort, FaSortUp, FaSortDown, FaPlus, FaTimes, FaDollarSign, FaSave } from 'react-icons/fa';
 import { formatNumberWithCommas } from '../utils/utilities';
+import * as validationService from '../services/validationService';
 
 const PurchasesPage: React.FC = () => {
   const [data, setData] = useState<PurchasesResponse | null>(null);
@@ -27,16 +28,46 @@ const PurchasesPage: React.FC = () => {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState<boolean>(false);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]); // To populate the dropdown
   const [purchaseForm, setPurchaseForm] = useState({
-    ingredientId: '', // User will select this from a dropdown
+    ingredientId: '', 
     price: '',
     quantity: '',
     unit: 'kg'
   });
 
+  // This will hold the valid units fetched from the validation service
+  const [availableUnits, setAvailableUnits] = useState<string[]>([]);
+
+
   // Debounce the search term to avoid too many API calls
   // This will wait for 500ms after the user stops typing before making the API call
   const debouncedSearchTerm = useDebounce(queryParams.search, 500); 
 
+
+    useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch everything concurrently for better performance
+        const [ingredientsRes, unitsSet] = await Promise.all([
+          api.getIngredients(),
+          validationService.getValidUnits()
+        ]);
+        
+        setAllIngredients(ingredientsRes.data);
+        // Convert the Set to a sorted array for the dropdown
+        setAvailableUnits(Array.from(unitsSet).sort());
+
+      } catch (err) {
+        setError("Failed to load initial page data.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadInitialData();
+  }, []);
+  
   useEffect(() => {
     const fetchPurchases = async () => {
       setIsLoading(true);
@@ -54,7 +85,6 @@ const PurchasesPage: React.FC = () => {
         };
         
         // Clean up the object to not send empty parameters to the API
-        // This is good practice but optional if your backend handles them gracefully
         Object.keys(paramsToSend).forEach(key => {
           const typedKey = key as keyof PurchaseQueryParams;
           if (paramsToSend[typedKey] === '' || paramsToSend[typedKey] === undefined) {
@@ -78,7 +108,6 @@ const PurchasesPage: React.FC = () => {
         setAllIngredients(response.data);
       } catch (err) {
         console.error("Failed to load ingredient list for modal.", err);
-        // This error is less critical, so we might not set the main page error state
       }
     };
 
@@ -129,10 +158,6 @@ const PurchasesPage: React.FC = () => {
         purchaseUnit: purchaseForm.unit,
       });
       handleClosePurchaseModal();
-      // Refetch the purchases list to show the new entry.
-      // We can do this by just changing a query param that will trigger the useEffect.
-      // A simple way is to toggle the sort order, or just refetch directly.
-      // Let's create a dedicated refetch function for clarity.
       refetchPurchases();
     } catch (err) {
       setError("Failed to log purchase.");
@@ -140,11 +165,9 @@ const PurchasesPage: React.FC = () => {
     }
   };
   
-  // A new function to manually trigger a refetch of the purchases data
   const refetchPurchases = async () => {
       setIsLoading(true);
       const params = { ...queryParams, search: debouncedSearchTerm };
-      // ... (same logic as in useEffect to build and send params)
       const response = await api.getPurchases(params);
       setData(response.data);
       setIsLoading(false);
@@ -152,11 +175,9 @@ const PurchasesPage: React.FC = () => {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // When a filter changes, always reset to the first page
     setQueryParams(prev => ({ ...prev, [name]: value, page: 1 }));
   };
   
-  // Handler for clicking on sortable table headers
   const handleSort = (column: string) => {
     setQueryParams(prev => ({
       ...prev,
@@ -166,7 +187,6 @@ const PurchasesPage: React.FC = () => {
     }));
   };
   
-  // Helper to render the correct sort icon
   const renderSortIcon = (column: string) => {
     if (queryParams.sortBy !== column) {
       return <FaSort className="sort-icon" />;
@@ -331,11 +351,19 @@ return (
 
               <div className="form-group">
                 <label htmlFor="unit">Purchase Unit</label>
-                <select id="unit" name="unit" className="form-select" value={purchaseForm.unit} onChange={handlePurchaseFormChange}>
-                  <option value="kg">Kilogram (kg)</option>
-                  <option value="g">Gram (g)</option>
-                  <option value="lb">Pound (lb)</option>
-                  <option value="oz">Ounce (oz)</option>
+                <select 
+                  id="unit" 
+                  name="unit" 
+                  className="form-select" 
+                  value={purchaseForm.unit} 
+                  onChange={handlePurchaseFormChange}
+                >
+                  {/* --- DYNAMICALLY POPULATED OPTIONS --- */}
+                  {availableUnits.map(unitOption => (
+                    <option key={unitOption} value={unitOption}>
+                      {unitOption}
+                    </option>
+                  ))}
                 </select>
               </div>
 

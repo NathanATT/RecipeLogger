@@ -6,7 +6,7 @@ let validUnitsSet: Set<string> | null = null;
  * Fetches all possible valid units (custom + standard) and caches them.
  * @returns {Promise<Set<string>>} A Set containing all valid unit strings.
  */
-const getValidUnits = async (): Promise<Set<string>> => {
+export const getValidUnits = async (): Promise<Set<string>> => {
     if (validUnitsSet) {
         return validUnitsSet; 
     }
