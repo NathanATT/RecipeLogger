@@ -55,20 +55,26 @@ const createRecipe = async (recipeData) => {
 }
 
 // Function to update a recipe
-const updateRecipe = async (recipeId, recipeData) => {
-    try {
-        const updatedRecipe = await Recipe.findByIdAndUpdate(recipeId, recipeData, { new: true, runValidators: true });
-        if (!updatedRecipe) {
-            throw new AppError('Recipe not found', 404);
-        }
-        return updatedRecipe;
-    } catch (error) {
-        if (error instanceof AppError) {
-            throw error; // Re-throw custom errors
-        }
-        throw new AppError('Error updating recipe', 500);
-    }
-}
+const updateRecipe = async (id, updateData) => {
+  // Find the recipe first to ensure it exists.
+  const recipeToUpdate = await Recipe.findById(id);
+  if (!recipeToUpdate) {
+    throw new AppError('Recipe not found.', 404);
+  }
+
+  // Use the SAME helper function to handle the ingredients
+  const processedIngredients = await processTextIngredients(updateData.ingredients);
+
+  // Update the document in memory
+  recipeToUpdate.set({
+    ...updateData,
+    ingredients: processedIngredients,
+  });
+  
+  // Save the changes
+  await recipeToUpdate.save();
+  return recipeToUpdate;
+};
 
 // Function to delete a recipe
 const deleteRecipeById = async (recipeId) => {
@@ -138,33 +144,42 @@ const calculateRecipeCost = async (recipeId) => {
  * @returns {Promise<Object>} The newly created recipe document.
  */
 const createRecipeFromText = async (recipeData) => {
-  const { recipeName, ingredients: textIngredients, ...rest } = recipeData;
+  // Use the helper function to handle the ingredients
+  const processedIngredients = await processTextIngredients(recipeData.ingredients);
 
-  if (!recipeName || !textIngredients || !Array.isArray(textIngredients)) {
-    throw new AppError('Recipe name and an ingredients array are required.', 400);
+  // Now the rest of the function is very simple
+  const newRecipe = new Recipe({
+    ...recipeData,
+    ingredients: processedIngredients,
+  });
+
+  await newRecipe.save();
+  return newRecipe;
+};
+
+/**
+ * Takes a text-based ingredient list and resolves it into a structured
+ * list with valid ingredient IDs by finding or creating each ingredient.
+ * This is the core shared logic.
+ * @param {Array<object>} textIngredients - Array of {name, amount, unit}.
+ * @returns {Promise<Array<object>>} The processed ingredients array.
+ */
+const processTextIngredients = async (textIngredients) => {
+  if (!textIngredients || !Array.isArray(textIngredients)) {
+    throw new AppError('An ingredients array is required.', 400);
   }
 
-  // Process each text ingredient to get a valid ingredient sub-document
-  const processedIngredients = await Promise.all(
+  return Promise.all(
     textIngredients.map(async (ing) => {
       const ingredientDoc = await findOrCreateIngredient(ing.name);
       return {
         ingredientId: ingredientDoc._id,
-        ingredientName: ingredientDoc.name, 
+        ingredientName: ingredientDoc.name,
         amount: ing.amount,
         unit: ing.unit,
       };
     })
   );
-
-  const newRecipe = new Recipe({
-    recipeName,
-    ingredients: processedIngredients,
-    ...rest,
-  });
-
-  await newRecipe.save();
-  return newRecipe;
 };
 
 module.exports = {
