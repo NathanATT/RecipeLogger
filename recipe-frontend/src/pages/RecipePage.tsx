@@ -322,7 +322,7 @@ return (
           </div> */}
           
           <h4>Ingredients</h4>
-          {recipeForm.ingredients.map((ing, index) => (
+          {(recipeForm.ingredients || []).map((ing, index) => (
             <div key={index} className="ingredient-form-row">
               <select value={ing.ingredientId} className="form-select" onChange={e => handleIngredientChange(index, 'ingredientId', e.target.value)} required>
                 <option value="" disabled>Select Ingredient</option>
