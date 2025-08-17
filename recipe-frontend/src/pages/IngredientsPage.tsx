@@ -2,8 +2,9 @@ import React, { useState, useEffect,  } from 'react';
 import type {FormEvent} from 'react'
 import * as api from '../api/apiService';
 import type { Ingredient } from '../types';
+import LogPurchaseModal from '../components/LogPurchaseModal';
 import './IngredientsPage.css';
-import { FaPlus, FaTimes, FaWarehouse, FaSave, FaEdit, FaTrash, FaDollarSign } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaWarehouse, FaSave, FaEdit, FaTrash } from 'react-icons/fa';
 
 const IngredientsPage: React.FC = () => {
   // --- State ---
@@ -20,13 +21,18 @@ const IngredientsPage: React.FC = () => {
   const [ingredientForm, setIngredientForm] = useState({ id: '', name: '', description: '' });
   
   // State for the Log Purchase form
-  const [purchaseForm, setPurchaseForm] = useState({ price: '', quantity: '', unit: 'kg' });
+  //const [purchaseForm, setPurchaseForm] = useState({ price: '', quantity: '', unit: 'kg' });
 
   // --- Data Fetching ---
   useEffect(() => {
     fetchIngredients();
   }, []);
 
+
+  const [purchaseModal, setPurchaseModal] = useState({
+    isOpen: false,
+    ingredientId: '', // To pre-select an ingredient
+  });
   const fetchIngredients = async () => {
     try {
       setIsLoading(true);
@@ -40,8 +46,17 @@ const IngredientsPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+  useEffect(() => { fetchIngredients(); }, []);
 
   // --- Modal & Form Handlers ---
+  const handleOpenPurchaseModal = (ingredient: Ingredient) => {
+    setPurchaseModal({ isOpen: true, ingredientId: ingredient._id });
+  };
+  
+  const handleClosePurchaseModal = () => {
+    setPurchaseModal({ isOpen: false, ingredientId: '' });
+  };
+
   const handleOpenModal = (mode: 'create' | 'edit' | 'purchase', ingredient: Ingredient | null = null) => {
     setError(null); 
     setModalState({ mode, selectedIngredient: ingredient });
@@ -54,7 +69,6 @@ const IngredientsPage: React.FC = () => {
   const handleCloseModals = () => {
     setModalState({ mode: null, selectedIngredient: null });
     setIngredientForm({ id: '', name: '', description: '' });
-    setPurchaseForm({ price: '', quantity: '', unit: 'kg' });
   };
   
   // --- API handlers ---
@@ -85,30 +99,6 @@ const IngredientsPage: React.FC = () => {
         alert("Failed to delete ingredient.");
         console.error("Error deleting ingredient:", err);
       }
-    }
-  };
-
-  const handleLogPurchase = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    if (!modalState.selectedIngredient || !purchaseForm.price || !purchaseForm.quantity) {
-        setError("Please fill out all purchase fields.");
-        return;
-    }
-      
-    try {
-      await api.logPurchase({
-        ingredientId: modalState.selectedIngredient._id,
-        price: parseFloat(purchaseForm.price),
-        quantityPurchased: parseFloat(purchaseForm.quantity),
-        purchaseUnit: purchaseForm.unit,
-      });
-      handleCloseModals();
-      fetchIngredients();
-    } catch (err) {
-      setError("Failed to log purchase.");
-      console.error("Error logging purchase:", err);
     }
   };
 
@@ -145,9 +135,9 @@ const IngredientsPage: React.FC = () => {
                       :'N/A'}</td>
                 <td>{ing.lastUpdated ? new Date(ing.lastUpdated).toLocaleDateString() : 'N/A'}</td>
                 <td className="action-cell">
-                  <button className="icon-button" onClick={() => handleOpenModal('purchase', ing)} title="Log New Purchase">
-                    <FaWarehouse />
-                  </button>
+                <button className="icon-button" onClick={() => handleOpenPurchaseModal(ing)} title="Log New Purchase">
+                  <FaWarehouse />
+                </button>
                   <button className="icon-button" onClick={() => handleOpenModal('edit', ing)} title="Edit Ingredient">
                     <FaEdit />
                   </button>
@@ -182,40 +172,14 @@ const IngredientsPage: React.FC = () => {
           </div>
         </div>
       )}
-
       {/* --- Log Purchase Modal --- */}
-      {modalState.mode === 'purchase' && modalState.selectedIngredient && (
-          <div className="modal-overlay">
-              <div className="modal-content">
-                  <button className="modal-close-button" onClick={handleCloseModals}><FaTimes /></button>
-                  <h2>Log Purchase for {modalState.selectedIngredient.name}</h2>
-                   <form onSubmit={handleLogPurchase}>
-                       {error && <div className="error-message form-feedback">{error}</div>}
-                       <div className="form-group">
-                           <label htmlFor="price">Total Price Paid</label>
-                           <div className="input-with-icon">
-                               <FaDollarSign className="input-icon" />
-                               <input id="price" type="number" step="0.01" className="form-input" placeholder="e.g., 10.50" value={purchaseForm.price} onChange={e => setPurchaseForm({...purchaseForm, price: e.target.value})} required />
-                           </div>
-                       </div>
-                       <div className="form-group">
-                           <label htmlFor="quantity">Quantity Purchased</label>
-                           <input id="quantity" type="number" step="0.01" className="form-input" placeholder="e.g., 5" value={purchaseForm.quantity} onChange={e => setPurchaseForm({...purchaseForm, quantity: e.target.value})} required />
-                       </div>
-                       <div className="form-group">
-                           <label htmlFor="unit">Purchase Unit</label>
-                           <select id="unit" className="form-select" value={purchaseForm.unit} onChange={e => setPurchaseForm({...purchaseForm, unit: e.target.value})}>
-                               <option value="kg">Kilogram (kg)</option>
-                               <option value="g">Gram (g)</option>
-                               <option value="lb">Pound (lb)</option>
-                               <option value="oz">Ounce (oz)</option>
-                           </select>
-                       </div>
-                       <button type="submit" className="submit-button">Save Purchase</button>
-                   </form>
-              </div>
-          </div>
-      )}
+      <LogPurchaseModal
+        isOpen={purchaseModal.isOpen}
+        onClose={handleClosePurchaseModal}
+        onSuccess={fetchIngredients} // The success callback refetches the ingredient list
+        allIngredients={ingredients}
+        initialIngredientId={purchaseModal.ingredientId}
+      />
     </div>
   );
 };
