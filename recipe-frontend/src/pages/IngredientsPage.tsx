@@ -20,9 +20,6 @@ const IngredientsPage: React.FC = () => {
   // State for the Create/Edit form
   const [ingredientForm, setIngredientForm] = useState({ id: '', name: '', description: '' });
   
-  // State for the Log Purchase form
-  //const [purchaseForm, setPurchaseForm] = useState({ price: '', quantity: '', unit: 'kg' });
-
   // --- Data Fetching ---
   useEffect(() => {
     fetchIngredients();

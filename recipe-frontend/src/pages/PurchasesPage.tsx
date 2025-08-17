@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
 import * as api from '../api/apiService';
 import type { PurchasesResponse } from '../types'; 
 import type { PurchaseQueryParams , Ingredient } from '../types'; 
+import LogPurchaseModal from '../components/LogPurchaseModal';
 import { useDebounce } from '../hooks/useDebounce';
 import './PurchasesPage.css';
-import { FaSort, FaSortUp, FaSortDown, FaPlus, FaTimes, FaDollarSign, FaSave } from 'react-icons/fa';
+import { FaSort, FaSortUp, FaSortDown, FaPlus } from 'react-icons/fa';
 import { formatNumberWithCommas } from '../utils/utilities';
-import * as validationService from '../services/validationService';
+
 
 const PurchasesPage: React.FC = () => {
   const [data, setData] = useState<PurchasesResponse | null>(null);
@@ -25,18 +25,8 @@ const PurchasesPage: React.FC = () => {
     endDate: ''
   });
 
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState<boolean>(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]); // To populate the dropdown
-  const [purchaseForm, setPurchaseForm] = useState({
-    ingredientId: '', 
-    price: '',
-    quantity: '',
-    unit: 'kg'
-  });
-
-  // This will hold the valid units fetched from the validation service
-  const [availableUnits, setAvailableUnits] = useState<string[]>([]);
-
 
   // Debounce the search term to avoid too many API calls
   // This will wait for 500ms after the user stops typing before making the API call
@@ -48,14 +38,12 @@ const PurchasesPage: React.FC = () => {
       try {
         setIsLoading(true);
         // Fetch everything concurrently for better performance
-        const [ingredientsRes, unitsSet] = await Promise.all([
+        const [ingredientsRes] = await Promise.all([
           api.getIngredients(),
-          validationService.getValidUnits()
         ]);
         
         setAllIngredients(ingredientsRes.data);
         // Convert the Set to a sorted array for the dropdown
-        setAvailableUnits(Array.from(unitsSet).sort());
 
       } catch (err) {
         setError("Failed to load initial page data.");
@@ -131,39 +119,7 @@ const PurchasesPage: React.FC = () => {
     setIsPurchaseModalOpen(true);
   };
 
-  const handleClosePurchaseModal = () => {
-    setIsPurchaseModalOpen(false);
-    // Reset form state on close
-    setPurchaseForm({ ingredientId: '', price: '', quantity: '', unit: 'kg' });
-  };
-  
-  const handlePurchaseFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setPurchaseForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
-  const handleLogPurchaseSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!purchaseForm.ingredientId || !purchaseForm.price || !purchaseForm.quantity) {
-      setError("Please select an ingredient and fill out all fields.");
-      return;
-    }
-    
-    try {
-      await api.logPurchase({
-        ingredientId: purchaseForm.ingredientId,
-        price: parseFloat(purchaseForm.price),
-        quantityPurchased: parseFloat(purchaseForm.quantity),
-        purchaseUnit: purchaseForm.unit,
-      });
-      handleClosePurchaseModal();
-      refetchPurchases();
-    } catch (err) {
-      setError("Failed to log purchase.");
-      console.error("Error logging purchase:", err);
-    }
-  };
   
   const refetchPurchases = async () => {
       setIsLoading(true);
@@ -311,69 +267,14 @@ return (
           </button>
         </div>
       )}
-      {isPurchaseModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="modal-close-button" onClick={handleClosePurchaseModal}><FaTimes /></button>
-            <h2>Log New Purchase</h2>
-            <form onSubmit={handleLogPurchaseSubmit}>
-              {error && <div className="error-message form-feedback">{error}</div>}
-              
-              <div className="form-group">
-                <label htmlFor="ingredientId">Ingredient</label>
-                <select 
-                  id="ingredientId"
-                  name="ingredientId"
-                  className="form-select"
-                  value={purchaseForm.ingredientId}
-                  onChange={handlePurchaseFormChange}
-                  required
-                >
-                  <option value="" disabled>Select an ingredient...</option>
-                  {allIngredients.map(ing => (
-                    <option key={ing._id} value={ing._id}>{ing.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="price">Total Price Paid</label>
-                <div className="input-with-icon">
-                  <FaDollarSign className="input-icon" />
-                  <input id="price" name="price" type="number" step="0.01" className="form-input" placeholder="e.g., 10.50" value={purchaseForm.price} onChange={handlePurchaseFormChange} required />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="quantity">Quantity Purchased</label>
-                <input id="quantity" name="quantity" type="number" step="0.01" className="form-input" placeholder="e.g., 5" value={purchaseForm.quantity} onChange={handlePurchaseFormChange} required />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="unit">Purchase Unit</label>
-                <select 
-                  id="unit" 
-                  name="unit" 
-                  className="form-select" 
-                  value={purchaseForm.unit} 
-                  onChange={handlePurchaseFormChange}
-                >
-                  {/* --- DYNAMICALLY POPULATED OPTIONS --- */}
-                  {availableUnits.map(unitOption => (
-                    <option key={unitOption} value={unitOption}>
-                      {unitOption}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button type="submit" className="submit-button">
-                <FaSave /> Save Purchase
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Log Purchase Modal */}
+      <LogPurchaseModal
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setIsPurchaseModalOpen(false)}
+        onSuccess={refetchPurchases} // The success callback refetches the purchase list
+        allIngredients={allIngredients}
+        // No initialIngredientId is passed, so the dropdown will be enabled
+      />
     </div>
   );
 };
