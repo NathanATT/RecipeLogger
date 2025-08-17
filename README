@@ -2,9 +2,6 @@
 
 A full-stack MERN application designed to help home cooks, bakers, and small food businesses accurately calculate the cost of their recipes. By tracking ingredient purchases and prices, this tool provides precise per-unit costing, recipe scaling, and profit margin analysis.
 
-
-*(Replace this with a high-quality screenshot or an animated GIF of your application in action. You can upload an image to a site like Imgur to get a link.)*
-
 ## ✨ Core Features
 
 *   **Ingredient Management:** Full CRUD (Create, Read, Update, Delete) functionality for a master list of ingredients.
