@@ -47,7 +47,6 @@ const App: React.FC = () => {
             </li>
           </ul>
         </nav>
-
         {/* Main Content Area */}
         <main className="main-content">
           <Routes>

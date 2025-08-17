@@ -65,7 +65,7 @@ Follow these instructions to get a copy of the project up and running on your lo
     *   Start the backend server:
         ```bash
         npm start
-        # Or for development with nodemon: npm run dev
+        # Or for development with nodemon: npm run serve
         ```
         The server should now be running on `http://localhost:5000`.
 
