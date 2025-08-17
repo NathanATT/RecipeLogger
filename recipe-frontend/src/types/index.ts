@@ -22,7 +22,7 @@ export interface Recipe {
   _id: string;
   recipeName: string;
   description?: string;
-  instructions: string;
+  instructions?: string;
   servings?: number;
   ingredients: RecipeIngredient[];
   createdAt?: string;
