@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ConversionSetting = require('../Backend/models/conversionSetting');
 const app = express()
 var cors = require('cors');
-const env = require('dotenv');
+
 
 // Import route files
 const recipeRoutes = require('./routes/recipeRoutes');
@@ -30,7 +30,7 @@ async function initializeSettings() {
   }
 }
 
-mongoose.connect(process.env.MONGOOSE_URI)
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("success!!");
     app.listen(PORT,() => {
