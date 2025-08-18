@@ -12,7 +12,9 @@ const purchaseRoutes = require('./routes/purchaseRoutes');
 // You will likely want a route to manage your new settings
 const settingRoutes = require('../Backend/routes/settingRoutes');
 
-env.config({path: './config/.env'});
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config(); 
+}
 
 const PORT = process.env.PORT || 5000
 app.use(cors());
