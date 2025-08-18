@@ -4,6 +4,10 @@ const ConversionSetting = require('../Backend/models/conversionSetting');
 const app = express()
 var cors = require('cors');
 
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Your local dev URL as a fallback
+};
+
 
 // Import route files
 const recipeRoutes = require('./routes/recipeRoutes');
@@ -17,7 +21,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const PORT = process.env.PORT || 5000
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use(express.json());
 //test
