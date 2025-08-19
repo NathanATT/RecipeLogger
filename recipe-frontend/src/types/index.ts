@@ -101,3 +101,23 @@ export interface PurchasesResponse {
   totalPages: number;
   currentPage: number;
 }
+
+// Type for the error response from the API
+export interface ErrorResponseData {
+  message: string;
+  error?: string;
+}
+
+/**
+ * Defines the structure of an Axios error object.
+ * We only need to type the parts we care about, primarily `response`.
+ */
+export interface ApiError {
+  response?: {
+    data?: ErrorResponseData;
+    status?: number;
+    headers?: unknown;
+  };
+  message?: string; // The generic error message like "Network Error"
+  config?: unknown;
+}
