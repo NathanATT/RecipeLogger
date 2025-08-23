@@ -1,0 +1,48 @@
+/* Make the modal wider to accommodate the new layout */
+.recipe-form-modal-content {
+  max-width: 1000px; /* Wider than the default modal */
+  width: 95%;
+}
+
+.recipe-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 2/3 for the form, 1/3 for the reference tables */
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.recipe-form-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.reference-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  /* Make the sidebar fill the height of the grid cell */
+  min-height: 0; 
+}
+
+/* Ensure the ingredients textarea takes up remaining space in the form */
+.recipe-form-main .form-group.ingredients-group {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-form-main .form-group.ingredients-group .form-textarea {
+  flex-grow: 1;
+}
+
+/* Responsive adjustments for the modal */
+@media (max-width: 850px) {
+  .recipe-form-grid {
+    grid-template-columns: 1fr; /* Stack the columns on smaller screens */
+  }
+  
+  .reference-sidebar {
+    /* Limit height when stacked */
+    max-height: 400px;
+  }
+}
