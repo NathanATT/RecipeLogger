@@ -1,0 +1,65 @@
+.reference-table-container {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Make it fill the parent grid cell */
+}
+
+.reference-table-container h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.5rem 2rem; /* Space for the icon */
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+}
+
+.reference-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto; /* This is key for scrolling */
+  flex-grow: 1;
+}
+
+.reference-list li {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.reference-list li:last-child {
+  border-bottom: none;
+}
+
+.reference-list li.no-results {
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
+}

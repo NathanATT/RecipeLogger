@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import * as api from '../api/apiService';
-import type { Recipe, CreateRecipeFromTextPayload } from '../types';
+import type { Recipe, CreateRecipeFromTextPayload, Ingredient } from '../types';
 import { parseIngredientsFromText } from '../utils/recipeParser';
 import { transformIngredientsToText } from '../utils/recipeTransformer';
+import SearchableReferenceTable from './SearchableReferenceTable';
+import * as validationService from '../services/validationService';
 import { FaTimes, FaSave } from 'react-icons/fa';
+
+import './RecipeFormModal.css';
 
 interface RecipeFormModalProps {
   isOpen: boolean;
@@ -30,6 +34,10 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+  const [availableUnits, setAvailableUnits] = useState<string[]>([]);
+
+
   // This effect pre-populates the form when it opens in "Edit" mode
   useEffect(() => {
     // Only run when the modal is opened
@@ -61,11 +69,24 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
           setIsLoading(false);
         }
       };
+
+      const loadReferenceData = async () => {
+        try {
+          const [ingredientsRes, unitsSet] = await Promise.all([
+            api.getIngredients(),
+            validationService.getValidUnits(),
+          ]);
+          setAllIngredients(ingredientsRes.data);
+          setAvailableUnits(Array.from(unitsSet));
+        } catch (err) {
+          console.error("Error loading reference data:", err);
+          setError("Failed to load reference data.");
+        }
+      }
       
+      loadReferenceData();
       fetchFullRecipe();
     } else {
-      // --- CREATE MODE ---
-      // Reset to a blank slate
       setFormState({ recipeName: '', description: '', instructions: '', servings: 1, ingredientsText: '' });
     }
   }, [isOpen, initialRecipeData]);
@@ -97,10 +118,8 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
 
     try {
       if (initialRecipeData?._id) {
-        // EDIT MODE: Call the update endpoint
         await api.updateRecipe(initialRecipeData._id, payload);
       } else {
-        // CREATE MODE: Call the create endpoint
         await api.createRecipeFromText(payload);
       }
       onSuccess();
@@ -116,44 +135,105 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+<div className="modal-overlay">
+      <div className="modal-content recipe-form-modal-content">
         <button className="modal-close-button" onClick={onClose}><FaTimes /></button>
         <h2>{initialRecipeData ? 'Edit Recipe' : 'Create New Recipe'}</h2>
-        {isLoading && <div className="loading-spinner">Loading recipe...</div>}
-        <form onSubmit={handleSubmit}>
-          {error && <div className="error-message form-feedback">{error}</div>}
+        <div className="recipe-form-grid">
           
-          <div className="form-group">
-            <label htmlFor="recipeName">Recipe Name</label>
-            <input id="recipeName" name="recipeName" className="form-input" value={formState.recipeName} onChange={handleInputChange} required />
-          </div>
+          {/* --- COLUMN 1: THE MAIN FORM --- */}
+          <form onSubmit={handleSubmit} className="recipe-form-main">
+            {isLoading ? (
+              <div className="loading-spinner">Loading recipe...</div>
+            ) : (
+              <>
+                {error && <div className="error-message form-feedback">{error}</div>}
+                
+                <div className="form-group">
+                  <label htmlFor="recipeName">Recipe Name</label>
+                  <input 
+                    id="recipeName" 
+                    name="recipeName" 
+                    className="form-input" 
+                    value={formState.recipeName} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="servings">Servings</label>
-            <input id="servings" name="servings" type="number" min="1" className="form-input" value={formState.servings} onChange={handleInputChange} />
-          </div>
+                <div className="form-group">
+                  <label htmlFor="servings">Servings</label>
+                  <input 
+                    id="servings" 
+                    name="servings" 
+                    type="number" 
+                    min="1" 
+                    className="form-input" 
+                    value={formState.servings} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea id="description" name="description" className="form-textarea" rows={3} value={formState.description} onChange={handleInputChange} />
-          </div>
+                <div className="form-group">
+                  <label htmlFor="description">Description (Optional)</label>
+                  <textarea 
+                    id="description" 
+                    name="description" 
+                    className="form-textarea" 
+                    rows={3} 
+                    value={formState.description} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="instructions">Instructions</label>
-            <textarea id="instructions" name="instructions" className="form-textarea" rows={6} value={formState.instructions} onChange={handleInputChange} />
-          </div>
+                <div className="form-group">
+                  <label htmlFor="instructions">Instructions (Optional)</label>
+                  <textarea 
+                    id="instructions" 
+                    name="instructions" 
+                    className="form-textarea" 
+                    rows={6} 
+                    value={formState.instructions} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="ingredientsText">Ingredients</label>
-            <p className="settings-description">One ingredient per line: <strong>name amount unit</strong></p>
-            <textarea id="ingredientsText" name="ingredientsText" className="form-textarea" rows={10} value={formState.ingredientsText} onChange={handleInputChange} required />
-          </div>
+                <div className="form-group ingredients-group">
+                  <label htmlFor="ingredientsText">Ingredients</label>
+                  <p className="settings-description">
+                    One ingredient per line: <strong>name amount unit</strong>
+                  </p>
+                  <textarea 
+                    id="ingredientsText" 
+                    name="ingredientsText" 
+                    className="form-textarea" 
+                    value={formState.ingredientsText} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
+                </div>
 
-          <button type="submit" className="submit-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : <><FaSave /> Save Changes</>}
-          </button>
-        </form>
+                <button type="submit" className="submit-button" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : <><FaSave /> Save Changes</>}
+                </button>
+              </>
+            )}
+          </form>
+
+          {/* --- COLUMN 2: THE REFERENCE SIDEBAR --- */}
+          <div className="reference-sidebar">
+            <SearchableReferenceTable
+              title="Available Ingredients"
+              items={allIngredients.map(ing => ing.name)}
+              placeholder="Search ingredients..."
+            />
+            <SearchableReferenceTable
+              title="Available Units"
+              items={availableUnits}
+              placeholder="Search units..."
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
