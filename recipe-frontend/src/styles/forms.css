@@ -21,6 +21,8 @@
   color: var(--text-primary);
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  resize: vertical; /* Allow vertical resizing for textareas */
+  field-sizing: content;
 }
 
 .form-input:focus,

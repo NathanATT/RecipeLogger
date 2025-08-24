@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import './SearchableReferenceTable.css'; // New CSS file
+import './SearchableReferenceTable.css'; 
 import { FaSearch } from 'react-icons/fa';
 
 interface SearchableReferenceTableProps {

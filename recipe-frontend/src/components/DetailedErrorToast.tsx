@@ -13,7 +13,6 @@ const DetailedErrorToast: React.FC<DetailedErrorToastProps> = ({ userMessage, te
   const getErrorDetails = () => {
     if (!technicalError) return '';
     
-    // Check if it's an Axios error with a response object
     if ('response' in technicalError && (technicalError as ApiError).response?.data) {
       return JSON.stringify((technicalError as ApiError).response?.data, null, 2);
     }
