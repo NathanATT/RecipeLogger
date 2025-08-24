@@ -106,6 +106,50 @@ body {
   margin-right: auto;
 }
 
+/* --- GENERIC MODAL STYLES (for all simple modals) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--primary-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 600px; /* Default max-width for simple modals */
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
 
 
 @media (max-width: 768px) {

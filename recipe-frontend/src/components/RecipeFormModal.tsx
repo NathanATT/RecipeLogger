@@ -134,84 +134,53 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-<div className="modal-overlay">
+return (
+    <div className="modal-overlay">
       <div className="modal-content recipe-form-modal-content">
         <button className="modal-close-button" onClick={onClose}><FaTimes /></button>
         <h2>{initialRecipeData ? 'Edit Recipe' : 'Create New Recipe'}</h2>
+
         <div className="recipe-form-grid">
           
           {/* --- COLUMN 1: THE MAIN FORM --- */}
           <form onSubmit={handleSubmit} className="recipe-form-main">
             {isLoading ? (
-              <div className="loading-spinner">Loading recipe...</div>
+              <div className="loading-spinner">Loading recipe details...</div>
             ) : (
               <>
                 {error && <div className="error-message form-feedback">{error}</div>}
                 
-                <div className="form-group">
-                  <label htmlFor="recipeName">Recipe Name</label>
-                  <input 
-                    id="recipeName" 
-                    name="recipeName" 
-                    className="form-input" 
-                    value={formState.recipeName} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
-                </div>
+                {/* --- THIS IS THE NEW WRAPPER --- */}
+                <div className="form-scroll-content">
+                  <div className="form-group">
+                    <label htmlFor="recipeName">Recipe Name</label>
+                    <input id="recipeName" name="recipeName" className="form-input" value={formState.recipeName} onChange={handleInputChange} required />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="servings">Servings</label>
-                  <input 
-                    id="servings" 
-                    name="servings" 
-                    type="number" 
-                    min="1" 
-                    className="form-input" 
-                    value={formState.servings} 
-                    onChange={handleInputChange} 
-                  />
-                </div>
+                  <div className="form-group">
+                    <label htmlFor="servings">Servings</label>
+                    <input id="servings" name="servings" type="number" min="1" className="form-input" value={formState.servings} onChange={handleInputChange} />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="description">Description (Optional)</label>
-                  <textarea 
-                    id="description" 
-                    name="description" 
-                    className="form-textarea" 
-                    rows={3} 
-                    value={formState.description} 
-                    onChange={handleInputChange} 
-                  />
-                </div>
+                  <div className="form-group">
+                    <label htmlFor="description">Description (Optional)</label>
+                    <textarea id="description" name="description" className="form-textarea" rows={3} value={formState.description} onChange={handleInputChange} />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="instructions">Instructions (Optional)</label>
-                  <textarea 
-                    id="instructions" 
-                    name="instructions" 
-                    className="form-textarea" 
-                    rows={6} 
-                    value={formState.instructions} 
-                    onChange={handleInputChange} 
-                  />
-                </div>
+                  <div className="form-group">
+                    <label htmlFor="instructions">Instructions (Optional)</label>
+                    <textarea id="instructions" name="instructions" className="form-textarea" rows={5} value={formState.instructions} onChange={handleInputChange} />
+                  </div>
 
-                <div className="form-group ingredients-group">
-                  <label htmlFor="ingredientsText">Ingredients</label>
-                  <p className="settings-description">
-                    One ingredient per line: <strong>name amount unit</strong>
-                  </p>
-                  <textarea 
-                    id="ingredientsText" 
-                    name="ingredientsText" 
-                    className="form-textarea" 
-                    value={formState.ingredientsText} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
+                  <div className="form-group ingredients-group">
+                    <label htmlFor="ingredientsText">Ingredients</label>
+                    <p className="settings-description">
+                      One ingredient per line: <strong>name amount unit</strong>
+                    </p>
+                    <textarea id="ingredientsText" name="ingredientsText" className="form-textarea" value={formState.ingredientsText} onChange={handleInputChange} required />
+                  </div>
                 </div>
+                {/* --- END OF NEW WRAPPER --- */}
 
                 <button type="submit" className="submit-button" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving...' : <><FaSave /> Save Changes</>}
@@ -236,7 +205,7 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
         </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default RecipeFormModal;
