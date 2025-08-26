@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import type { FormEvent } from 'react'
 import * as api from '../api/apiService';
-import './SettingsPage.css'; // New CSS file
+import './SettingsPage.css'; 
 import { FaSave, FaPlus, FaTrash } from 'react-icons/fa';
 
 // Use a more convenient array format for state management in the UI
@@ -117,7 +117,7 @@ const SettingsPage: React.FC = () => {
                 step="0.01"
                 className="form-input" 
                 placeholder="e.g., 240"
-                value={rule.grams}
+                value={rule.grams || ''}
                 onChange={(e) => handleRuleChange(index, 'grams', e.target.value)}
                 required
               />

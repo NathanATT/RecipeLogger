@@ -1,102 +1,100 @@
-/* --- Table Container: The outer shell --- */
+/* --- Filter Container --- */
+.filters-container {
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+/* --- Table Container --- */
 .table-container {
   background-color: var(--secondary-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px; /* A more modern, rounded look */
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add some depth */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* --- The Table Itself --- */
 .styled-table {
   width: 100%;
   border-collapse: collapse;
-  color: var(--text-primary);
+  table-layout: fixed;
 }
 
-/* --- Table Header (thead) --- */
+/* --- Table Header --- */
 .styled-table thead tr {
-  /* A slightly darker background for the header to make it stand out */
-  background-color: #111a2c; 
-  text-align: left;
+  background-color: #111a2c;
 }
-
 .styled-table th {
-  padding: 1rem 1.5rem; /* Increased padding for more breathing room */
+  padding: 1rem 1.5rem;
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--text-secondary); /* A less prominent color for headers */
+  color: var(--text-secondary);
+  text-align: left;
+}
+.styled-table th[data-sortable="true"] {
+  cursor: pointer;
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* --- Table Body (tbody) --- */
+/* --- Table Body --- */
 .styled-table tbody tr {
-  /* Use a transparent border to create space between rows */
   border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.2s ease;
 }
 
-.styled-table td {
-  padding: 1rem 1.5rem; /* Match header padding */
-  vertical-align: middle; /* Ensure content is centered vertically */
-}
 
 .styled-table tbody tr:last-of-type {
-  border-bottom: none; /* No border on the very last row */
+  border-bottom: none;
 }
-
 .styled-table tbody tr:hover {
-  background-color: rgba(233, 69, 96, 0.05); /* A very subtle accent hover */
+  background-color: rgba(233, 69, 96, 0.05);
 }
 
-/* --- Specific Column Styling for Clarity --- */
 
-/* The main ingredient name should be prominent */
-.styled-table td:first-child {
-  font-weight: 600;
-  color: var(--text-primary);
+.date-actions-cell {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  gap: 1rem; 
 }
 
-/* The price can be slightly less prominent */
-.styled-table td:nth-child(2) {
-  font-family: 'Courier New', Courier, monospace; /* Monospaced font for numbers */
-  color: #2ecc71; /* Green for money */
+.date-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
-/* The date can be even less prominent */
-.styled-table td:nth-child(3) {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+.action-buttons-group {
+  display: flex;
+  justify-content: right;
+  gap: 0.5rem;
+  flex-shrink: 0; 
+
 }
 
-/* --- Action Cell and Buttons --- */
-.action-cell {
-  text-align: right; /* Align actions to the right */
-  width: 120px; /* Give a fixed width to prevent layout shifts */
+.cool-td {
+  margin: auto 0 auto auto
 }
 
 .icon-button {
   background: none;
-  border: 1px solid transparent; /* Prepare for a border on hover */
+  border: none;
   color: var(--text-secondary);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0.5rem;
-  margin: 0 0.25rem;
-  border-radius: 8px; /* Rounded buttons */
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
-
 .icon-button:hover {
-  border-color: var(--accent-color);
   color: var(--accent-color);
   background-color: rgba(233, 69, 96, 0.1);
 }
-
 .icon-button.delete:hover {
-  border-color: #e74c3c; /* A red color for danger */
   color: #e74c3c;
   background-color: rgba(231, 76, 60, 0.1);
 }
-
