@@ -22,6 +22,15 @@ const recipeIngredientSchema = new Schema({
   }
 }, { _id: false }); 
 
+const ingredientGroupSchema = new Schema({
+  groupName: {
+    type: String,
+    required: true,
+    default: 'Main'
+  },
+  ingredients: [recipeIngredientSchema]
+}, { _id: false });
+
 // Recipe model
 const recipeSchema = new Schema({
   recipeName: {
@@ -41,7 +50,7 @@ const recipeSchema = new Schema({
   servings: {
     type: Number
   },
-  ingredients: [recipeIngredientSchema]
+  ingredientGroups: [ingredientGroupSchema]
 }, {
   timestamps: true
 });
