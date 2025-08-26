@@ -61,17 +61,14 @@ const updateRecipe = async (id, updateData) => {
   if (!recipeToUpdate) {
     throw new AppError('Recipe not found.', 404);
   }
+  const processedGroups = await processTextIngredients(updateData.ingredients);
 
-  // Use the SAME helper function to handle the ingredients
-  const processedIngredients = await processTextIngredients(updateData.ingredients);
-
-  // Update the document in memory
   recipeToUpdate.set({
     ...updateData,
-    ingredients: processedIngredients,
+    ingredientGroups: processedGroups,
+    ingredients: undefined,
   });
   
-  // Save the changes
   await recipeToUpdate.save();
   return recipeToUpdate;
 };
@@ -144,13 +141,12 @@ const calculateRecipeCost = async (recipeId) => {
  * @returns {Promise<Object>} The newly created recipe document.
  */
 const createRecipeFromText = async (recipeData) => {
-  // Use the helper function to handle the ingredients
-  const processedIngredients = await processTextIngredients(recipeData.ingredients);
+  const processedGroups = await processTextIngredients(recipeData.ingredients);
 
-  // Now the rest of the function is very simple
   const newRecipe = new Recipe({
     ...recipeData,
-    ingredients: processedIngredients,
+    ingredientGroups: processedGroups,
+    ingredients: undefined // Ensure the old field is not saved
   });
 
   await newRecipe.save();
@@ -169,17 +165,39 @@ const processTextIngredients = async (textIngredients) => {
     throw new AppError('An ingredients array is required.', 400);
   }
 
-  return Promise.all(
-    textIngredients.map(async (ing) => {
-      const ingredientDoc = await findOrCreateIngredient(ing.name);
-      return {
-        ingredientId: ingredientDoc._id,
-        ingredientName: ingredientDoc.name,
-        amount: ing.amount,
-        unit: ing.unit,
-      };
-    })
-  );
+  // Use a map to build the groups
+  const groups = new Map();
+  let currentGroupName = 'Main'; // Default group if none is specified first
+
+  for (const ing of textIngredients) {
+    // If the ingredient has a groupName, switch the current group
+    if (ing.isGroupHeader) {
+      currentGroupName = ing.name;
+      continue; // Move to the next line
+    }
+
+    // If the current group doesn't exist in our map yet, create it
+    if (!groups.has(currentGroupName)) {
+      groups.set(currentGroupName, {
+        groupName: currentGroupName,
+        ingredients: [],
+      });
+    }
+
+    // Find or create the ingredient document
+    const ingredientDoc = await findOrCreateIngredient(ing.name);
+
+    // Add the processed ingredient to the current group's ingredient list
+    groups.get(currentGroupName).ingredients.push({
+      ingredientId: ingredientDoc._id,
+      ingredientName: ingredientDoc.name,
+      amount: ing.amount,
+      unit: ing.unit,
+    });
+  }
+
+  // Convert the map values to an array
+  return Array.from(groups.values());
 };
 
 module.exports = {
