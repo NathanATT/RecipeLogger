@@ -1,47 +1,59 @@
-interface ParsedIngredient {
-    name: string;
-    amount: number;
-    unit: string;
+// have to seperate group and ingredient types for type guarding
+// Header type
+export interface ParsedGroupHeader {
+  name: string;
+  isGroupHeader: true;
 }
 
-export const parseIngredientsFromText = (text: string): ParsedIngredient[] => {
-  // Split the text block into individual lines and filter out any empty lines.
+// Ingredient type 
+export interface ParsedIngredientLine {
+  name: string;
+  amount: number;
+  unit: string;
+  isGroupHeader: false;
+}
+
+// union type for type guarding
+export type ParsedItem = ParsedGroupHeader | ParsedIngredientLine;
+
+
+/**
+ * Parses a block of text into an array of structured items (groups or ingredients).
+ * @param {string} text - The raw text from the textarea.
+ * @returns {ParsedItem[]} An array of structured items.
+ */
+export const parseIngredientsFromText = (text: string): ParsedItem[] => {
   const lines = text.split('\n').filter(line => line.trim() !== '');
   
-  const parsedIngredients = lines.map(line => {
-    // Split the line by one or more spaces to handle messy input.
-    const parts = line.trim().split(/\s+/);
-    
-    // A valid line must have at least 3 parts: name (1+ words), amount, and unit.
-    if (parts.length < 3) {
-      console.warn(`Skipping malformed line: "${line}"`);
-      return null;
+  // The .map function now returns `ParsedItem | null`
+  const parsedItems = lines.map((line): ParsedItem | null => {
+    line = line.trim();
+
+    // Check for Group Header
+    if (line.startsWith('- ')) {
+      // parser returns a header object
+      return {
+        name: line.substring(2).trim(),
+        isGroupHeader: true,
+      };
     }
+
+    const parts = line.split(/\s+/);
+    if (parts.length < 3) return null;
     
-    // --- THIS IS THE NEW LOGIC ---
-    
-    // 1. The last part is always the unit.
-    const unit = parts.pop()!; // The "!" asserts that this value is not undefined.
-    
-    // 2. The new last part is now the amount.
+    const unit = parts.pop()!;
     const amountStr = parts.pop()!;
     const amount = parseFloat(amountStr);
-    
-    // 3. Everything else that remains in the 'parts' array is the ingredient's name.
     const name = parts.join(' ');
     
-    // --- END NEW LOGIC ---
-
-    // Validate the parsed parts. If amount is not a number or name is empty, it's invalid.
-    if (isNaN(amount) || !name) {
-      console.warn(`Skipping invalid line (bad amount or name): "${line}"`);
-      return null;
-    }
+    if (isNaN(amount) || !name) return null;
     
-    return { name, amount, unit };
+    // parser returns an ingredient object
+    return { name, amount, unit, isGroupHeader: false };
   });
   
-  // Filter out any lines that were null (malformed or invalid)
-  return parsedIngredients.filter((p): p is ParsedIngredient => p !== null);
+  // The type predicate checks if p is a valid parseditem.
+  // Matches ParsedItem and filters out nulls. 
+  // this ensures return is parsed item which can be a header or ingredient.
+  return parsedItems.filter((p): p is ParsedItem => p !== null);
 };
-

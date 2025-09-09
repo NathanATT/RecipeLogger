@@ -156,7 +156,6 @@ const createRecipeFromText = async (recipeData) => {
 /**
  * Takes a text-based ingredient list and resolves it into a structured
  * list with valid ingredient IDs by finding or creating each ingredient.
- * This is the core shared logic.
  * @param {Array<object>} textIngredients - Array of {name, amount, unit}.
  * @returns {Promise<Array<object>>} The processed ingredients array.
  */
@@ -176,7 +175,6 @@ const processTextIngredients = async (textIngredients) => {
       continue; // Move to the next line
     }
 
-    // If the current group doesn't exist in our map yet, create it
     if (!groups.has(currentGroupName)) {
       groups.set(currentGroupName, {
         groupName: currentGroupName,
