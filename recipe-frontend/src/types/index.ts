@@ -17,6 +17,11 @@ export interface RecipeIngredient {
   unit: string;
 }
 
+export interface IngredientGroup {
+  groupName: string;
+  ingredients: RecipeIngredient[];
+}
+
 // Type for a full recipe document
 export interface Recipe {
   _id: string;
@@ -24,7 +29,7 @@ export interface Recipe {
   description?: string;
   instructions?: string;
   servings?: number;
-  ingredients: RecipeIngredient[];
+  ingredientGroups: IngredientGroup[];
   createdAt?: string;
   updatedAt?: string;
 }
