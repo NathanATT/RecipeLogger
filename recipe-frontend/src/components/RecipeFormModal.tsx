@@ -39,11 +39,26 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
 
   // This effect pre-populates the form when it opens in "Edit" mode
   useEffect(() => {
-    // Only run when the modal is opened
     if (!isOpen) return;
 
     setError(null);
     
+    const loadReferenceData = async () => {
+      try {
+        const [ingredientsRes, unitsSet] = await Promise.all([
+          api.getIngredients(),
+          validationService.getValidUnits(),
+        ]);
+        setAllIngredients(ingredientsRes.data);
+        setAvailableUnits(Array.from(unitsSet));
+      } catch (err) {
+        console.error("Error loading reference data:", err);
+        setError("Failed to load reference data.");
+      }
+    }
+    
+    loadReferenceData();
+
     if (initialRecipeData?._id) {
       // --- EDIT MODE ---
       setIsLoading(true);
@@ -69,21 +84,7 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
         }
       };
 
-      const loadReferenceData = async () => {
-        try {
-          const [ingredientsRes, unitsSet] = await Promise.all([
-            api.getIngredients(),
-            validationService.getValidUnits(),
-          ]);
-          setAllIngredients(ingredientsRes.data);
-          setAvailableUnits(Array.from(unitsSet));
-        } catch (err) {
-          console.error("Error loading reference data:", err);
-          setError("Failed to load reference data.");
-        }
-      }
-      
-      loadReferenceData();
+
       fetchFullRecipe();
     } else {
       setFormState({ recipeName: '', description: '', instructions: '', servings: 1, ingredientsText: '' });

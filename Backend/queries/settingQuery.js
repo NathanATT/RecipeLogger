@@ -11,7 +11,6 @@ class AppError extends Error {
 const findGlobalSettings = async () => {
     const settings = await ConversionSetting.findOne({ key: 'global' });
     if (!settings) {
-        // This should not happen in a running application due to the startup check.
         throw new AppError('Global settings document not found. The application may need to be restarted.', 500);
     }
     return settings;
@@ -26,8 +25,6 @@ const updateGlobalSettings = async (updateData) => {
     }
 
     // Find the single settings document and update it.
-    // The 'upsert' option is false because we assume it always exists.
-    // { new: true } ensures the updated document is returned.
     const updatedSettings = await ConversionSetting.findOneAndUpdate(
         { key: 'global' },
         { $set: { customToGramConversions: new Map(Object.entries(customToGramConversions)) } },

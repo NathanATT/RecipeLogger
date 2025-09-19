@@ -174,38 +174,41 @@ const processTextIngredients = async (textIngredients) => {
     throw new AppError('An ingredients array is required.', 400);
   }
 
-  // Use a map to build the groups
-  const groups = new Map();
-  let currentGroupName = 'Main'; // Default group if none is specified first
+  const groups = [];
+  let currentGroup = null;
 
-  for (const ing of textIngredients) {
-    // If the ingredient has a groupName, switch the current group
-    if (ing.isGroupHeader) {
-      currentGroupName = ing.name;
-      continue; // Move to the next line
-    }
-
-    if (!groups.has(currentGroupName)) {
-      groups.set(currentGroupName, {
-        groupName: currentGroupName,
+  for (const item of textIngredients) {
+    if (item.isGroupHeader) {
+      // If we find a new group header, create a new group object.
+      currentGroup = {
+        groupName: item.name,
         ingredients: [],
-      });
+      };
+      // Add this new, empty group to our main array.
+      groups.push(currentGroup);
+      continue; 
     }
 
-    // Find or create the ingredient document
-    const ingredientDoc = await findOrCreateIngredient(ing.name);
+    // If we encounter an ingredient before any group header, create a default "Main" group.
+    if (!currentGroup) {
+      currentGroup = {
+        groupName: 'Main',
+        ingredients: [],
+      };
+      groups.push(currentGroup);
+    }
 
-    // Add the processed ingredient to the current group's ingredient list
-    groups.get(currentGroupName).ingredients.push({
+    const ingredientDoc = await findOrCreateIngredient(item.name);
+
+    currentGroup.ingredients.push({
       ingredientId: ingredientDoc._id,
       ingredientName: ingredientDoc.name,
-      amount: ing.amount,
-      unit: ing.unit,
+      amount: item.amount,
+      unit: item.unit,
     });
   }
 
-  // Convert the map values to an array
-  return Array.from(groups.values());
+  return groups;
 };
 
 module.exports = {
