@@ -93,15 +93,25 @@ const deleteRecipeById = async (recipeId) => {
 const calculateRecipeCost = async (recipeId) => {
     const recipe = await Recipe.findById(recipeId).lean(); // .lean() for performance
     if (!recipe) throw new AppError('Recipe not found.', 404);
+    const ingre = recipe.ingredientGroups.map(igGroups => igGroups.ingredients);
+    const ingredientIds = [];
+    const recipeIngredients = [];
 
-    const ingredientIds = recipe.ingredients.map(ing => ing.ingredientId);
+    for (let i = 0; i < ingre.length; i++) {
+        for (let j = 0; j < ingre[i].length; j++) {
+            ingredientIds.push(ingre[i][j].ingredientId);
+            recipeIngredients.push(ingre[i][j]);
+        }
+    }
+
     const ingredientsData = await Ingredient.find({ '_id': { $in: ingredientIds } }).lean();
+    
     const ingredientMap = new Map(ingredientsData.map(ing => [ing._id.toString(), ing]));
 
     let totalCost = 0;
     const ingredientCosts = [];
 
-    await Promise.all(recipe.ingredients.map(async (recipeIngredient) => {
+    await Promise.all(recipeIngredients.map(async (recipeIngredient) => {
         const masterIngredient = ingredientMap.get(recipeIngredient.ingredientId.toString());
         if (!masterIngredient) throw new AppError(`Data for ingredient '${recipeIngredient.ingredientName}' not found.`, 404);
 

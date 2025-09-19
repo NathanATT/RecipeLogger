@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import * as api from '../api/apiService';
-import type { Recipe, CreateRecipeFromTextPayload, Ingredient } from '../types';
-import { parseIngredientsFromText } from '../utils/recipeParser';
+import type { Recipe, CreateRecipeFromTextPayload, Ingredient, TextIngredientPayload } from '../types';
+import { parseIngredientsFromText, type ParsedItem } from '../utils/recipeParser';
 import { transformIngredientsToText } from '../utils/recipeTransformer';
 import SearchableReferenceTable from './SearchableReferenceTable';
 import * as validationService from '../services/validationService';
 import { FaTimes, FaSave } from 'react-icons/fa';
-
 import './RecipeFormModal.css';
 
 interface RecipeFormModalProps {
@@ -60,7 +59,7 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
             description: fullRecipe.description || '',
             instructions: fullRecipe.instructions || '',
             servings: fullRecipe.servings || 1,
-            ingredientsText: transformIngredientsToText(fullRecipe.ingredients),
+            ingredientsText: transformIngredientsToText(fullRecipe.ingredientGroups),
           });
         } catch (err) {
           setError("Failed to load recipe details for editing.");
@@ -101,8 +100,8 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
     setError(null);
     setIsSubmitting(true);
     
-    const parsedIngredients = parseIngredientsFromText(formState.ingredientsText);
-    if (parsedIngredients.length === 0) {
+    const parsedItems: ParsedItem[] = parseIngredientsFromText(formState.ingredientsText);
+    if (parsedItems.length === 0) {
       setError("Could not parse any valid ingredients. Format: 'name amount unit'.");
       setIsSubmitting(false);
       return;
@@ -113,7 +112,12 @@ const RecipeFormModal: React.FC<RecipeFormModalProps> = ({
       description: formState.description,
       instructions: formState.instructions,
       servings: Number(formState.servings),
-      ingredients: parsedIngredients,
+      ingredients: parsedItems.map((item): TextIngredientPayload => {
+        if (item.isGroupHeader) {
+          return { name: item.name, isGroupHeader: true };
+        }
+        return { name: item.name, amount: item.amount, unit: item.unit, isGroupHeader: false };
+      }),
     };
 
     try {
@@ -175,9 +179,17 @@ return (
                   <div className="form-group ingredients-group">
                     <label htmlFor="ingredientsText">Ingredients</label>
                     <p className="settings-description">
-                      One ingredient per line: <strong>name amount unit</strong>
+                      Use <strong>- Group Name</strong> for sections. Then list ingredients: <strong>name amount unit</strong>
                     </p>
-                    <textarea id="ingredientsText" name="ingredientsText" className="form-textarea" value={formState.ingredientsText} onChange={handleInputChange} required />
+                    <textarea
+                      id="ingredientsText"
+                      name="ingredientsText"
+                      className="form-textarea"
+                      placeholder={"- Dough\nflour 500 g\nyeast 10 g\n\n- Topping\ncheese 100 g"}
+                      value={formState.ingredientsText}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
                 </div>
                 {/* --- END OF NEW WRAPPER --- */}

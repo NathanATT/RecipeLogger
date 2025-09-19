@@ -88,14 +88,22 @@ const RecipeDetailPage: React.FC = () => {
             />
           </div>
           
-          <ul className="scaled-ingredient-list">
-            {recipe.ingredients.map((ing, index) => (
-              <li key={index}>
-                <span className="ing-name">{ing.ingredientName}</span>
-                <span className="ing-amount">{(ing.amount * scalingFactor).toFixed(2)} {ing.unit}</span>
-              </li>
+          <div className="ingredient-groups-list">
+            {recipe.ingredientGroups.map((group, groupIndex) => (
+              // You can use the <details> and <summary> HTML elements for a simple, accessible accordion
+              <details key={groupIndex} open> {/* 'open' makes it expanded by default */}
+                <summary className="group-header">{group.groupName}</summary>
+                <ul className="scaled-ingredient-list">
+                  {group.ingredients.map((ing, ingIndex) => (
+                    <li key={ingIndex}>
+                      <span className="ing-name">{ing.ingredientName}</span>
+                      <span className="ing-amount">{(ing.amount * scalingFactor).toFixed(2)} {ing.unit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             ))}
-          </ul>
+          </div>
         </div>
 
         {/* --- Right Column: Costing and Profit --- */}
