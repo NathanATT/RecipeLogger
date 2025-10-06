@@ -2,7 +2,7 @@
 
 A full-stack MERN application designed to help home cooks, bakers, and small food businesses accurately calculate the cost of their recipes. By tracking ingredient purchases and prices, this tool provides precise per-unit costing, recipe scaling, and profit margin analysis.
 
-## ✨ Core Features
+## 🎄 Core Features
 
 *   **Ingredient Management:** Full CRUD (Create, Read, Update, Delete) functionality for a master list of ingredients.
 *   **Purchase Logging:** Keep a historical record of all ingredient purchases to track price fluctuations. The latest purchase automatically updates the ingredient's unit price.
@@ -17,7 +17,7 @@ A full-stack MERN application designed to help home cooks, bakers, and small foo
 *   **Advanced Data Views:** A fully filterable and sortable purchase history page with pagination to easily track expenses over time.
 *   **Modular Front-End:** Built with reusable, type-safe React components for maintainability and scalability.
 
-## 🛠️ Tech Stack
+## ⚙ Tech Stack
 
 ### Frontend
 *   **React** (with Vite)
@@ -33,7 +33,7 @@ A full-stack MERN application designed to help home cooks, bakers, and small foo
 *   **Mongoose** as the Object Data Modeler (ODM)
 *   **CORS** & **Dotenv**
 
-## 🚀 Getting Started
+## 🏃‍♂️ Getting Started
 
 Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
@@ -78,7 +78,7 @@ Follow these instructions to get a copy of the project up and running on your lo
         ```
         The React application should now be running on `http://localhost:5173` (or another port specified by Vite).
 
-## 📝 API Endpoints
+## API Endpoints
 
 The backend provides the following RESTful API endpoints:
 
@@ -99,7 +99,7 @@ The backend provides the following RESTful API endpoints:
 | `/api/settings`           | `GET`  | Get the global custom conversion settings.                 |
 | `/api/settings`           | `PUT`  | Update the global custom conversion settings.              |
 
-## 🔮 Future Improvements
+## Future Improvements
 
 *   **User Authentication:** Implement user accounts (JWT, Passport.js) so multiple users can manage their own private recipes and ingredient lists.
 *   **Data Visualization:** Add a dashboard with charts to visualize spending trends, most expensive ingredients, and recipe cost breakdowns.
